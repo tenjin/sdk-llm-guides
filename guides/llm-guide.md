@@ -25,7 +25,7 @@ Once you know the platform, fetch the corresponding guide:
 | Platform | Guide URL |
 |----------|-----------|
 | iOS | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ios/llm-guide.md` |
-| Android | Coming soon |
+| Android | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/android/llm-guide.md` |
 | Unity | Coming soon |
 | Flutter | Coming soon |
 | React Native | Coming soon |
