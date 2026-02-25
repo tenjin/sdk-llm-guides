@@ -8,10 +8,10 @@ Check the user's project for these indicators:
 
 | Platform | Look for |
 |----------|----------|
-| iOS | `*.xcodeproj`, `*.xcworkspace`, `Podfile`, `Package.swift`, `AppDelegate.swift`, `Info.plist` |
-| Android | `build.gradle`, `AndroidManifest.xml`, `MainActivity.kt`, `*.java` in android structure |
+| iOS | `*.xcodeproj`, `*.xcworkspace`, `Podfile`, `Package.swift`, `AppDelegate.swift`, `Info.plist` (without Flutter markers) |
+| Android | `build.gradle`, `AndroidManifest.xml`, `MainActivity.kt`, `*.java` in android structure (without Flutter markers) |
+| Flutter | `pubspec.yaml`, `lib/main.dart`, `android/` + `ios/` folders, `.dart` files |
 | Unity | `Assets/`, `ProjectSettings/`, `*.unity`, `*.cs` scripts |
-| Flutter | `pubspec.yaml`, `lib/main.dart`, `android/` + `ios/` folders |
 | React Native | `package.json` with `react-native`, `App.js` or `App.tsx`, `android/` + `ios/` folders |
 
 If you can't detect the platform, ask:
@@ -26,8 +26,8 @@ Once you know the platform, fetch the corresponding guide:
 |----------|-----------|
 | iOS | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ios/llm-guide.md` |
 | Android | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/android/llm-guide.md` |
+| Flutter | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/flutter/llm-guide.md` |
 | Unity | Coming soon |
-| Flutter | Coming soon |
 | React Native | Coming soon |
 
 ## Step 3: Follow the Guide

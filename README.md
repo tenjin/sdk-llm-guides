@@ -20,13 +20,14 @@ Use a platform-specific guide directly:
 | Platform | Guide URL |
 |----------|-----------|
 | iOS | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ios/llm-guide.md` |
-| Android | Coming soon |
+| Android | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/android/llm-guide.md` |
+| Flutter | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/flutter/llm-guide.md` |
 | Unity | Coming soon |
-| Flutter | Coming soon |
 | React Native | Coming soon |
+| Ionic | Coming soon |
 
 ```
-Add Tenjin SDK using: <url-from-table>
+Add Tenjin SDK to my project using: <url-from-table>
 ```
 
 ## Repository Structure
@@ -34,8 +35,12 @@ Add Tenjin SDK using: <url-from-table>
 ```
 guides/
 ├── llm-guide.md          # Entry point (detects platform, routes to specific guide)
-└── ios/
-    └── llm-guide.md      # iOS-specific integration guide
+├── ios/
+│   └── llm-guide.md      # iOS-specific integration guide
+├── android/
+│   └── llm-guide.md      # Android-specific integration guide
+└── flutter/
+    └── llm-guide.md      # Flutter-specific integration guide
 ```
 
 ## For LLMs
@@ -61,4 +66,5 @@ When adding a new platform guide:
 
 - [Tenjin iOS SDK](https://github.com/tenjin/tenjin-ios-sdk)
 - [Tenjin Android SDK](https://github.com/tenjin/tenjin-android-sdk)
+- [Tenjin Flutter SDK](https://github.com/tenjin/flutter-sdk)
 - [Tenjin Documentation](https://docs.tenjin.com/)
