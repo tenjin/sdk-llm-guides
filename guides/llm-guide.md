@@ -8,15 +8,16 @@ Check the user's project for these indicators:
 
 | Platform | Look for |
 |----------|----------|
-| iOS | `*.xcodeproj`, `*.xcworkspace`, `Podfile`, `Package.swift`, `AppDelegate.swift`, `Info.plist` (without Flutter markers) |
-| Android | `build.gradle`, `AndroidManifest.xml`, `MainActivity.kt`, `*.java` in android structure (without Flutter markers) |
+| iOS | `*.xcodeproj`, `*.xcworkspace`, `Podfile`, `Package.swift`, `AppDelegate.swift`, `Info.plist` (without cross-platform markers) |
+| Android | `build.gradle`, `AndroidManifest.xml`, `MainActivity.kt`, `*.java` in android structure (without cross-platform markers) |
 | Flutter | `pubspec.yaml`, `lib/main.dart`, `android/` + `ios/` folders, `.dart` files |
+| Ionic | `ionic.config.json`, `capacitor.config.ts`, `package.json` with `@ionic` or `@capacitor`, `angular.json` or `ionic` in dependencies |
 | Unity | `Assets/`, `ProjectSettings/`, `*.unity`, `*.cs` scripts |
 | React Native | `package.json` with `react-native`, `App.js` or `App.tsx`, `android/` + `ios/` folders |
 
 If you can't detect the platform, ask:
 
-> "Which platform are you building for? (iOS, Android, Unity, Flutter, React Native)"
+> "Which platform are you building for? (iOS, Android, Flutter, Ionic, Unity, React Native)"
 
 ## Step 2: Fetch Platform Guide
 
@@ -27,6 +28,7 @@ Once you know the platform, fetch the corresponding guide:
 | iOS | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ios/llm-guide.md` |
 | Android | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/android/llm-guide.md` |
 | Flutter | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/flutter/llm-guide.md` |
+| Ionic | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ionic/llm-guide.md` |
 | Unity | Coming soon |
 | React Native | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/react-native/llm-guide.md` |
 
