@@ -22,9 +22,9 @@ Use a platform-specific guide directly:
 | iOS | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ios/llm-guide.md` |
 | Android | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/android/llm-guide.md` |
 | Flutter | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/flutter/llm-guide.md` |
+| Ionic | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ionic/llm-guide.md` |
+| React Native | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/react-native/llm-guide.md` |
 | Unity | Coming soon |
-| React Native | Coming soon |
-| Ionic | Coming soon |
 
 ```
 Add Tenjin SDK to my project using: <url-from-table>
@@ -39,8 +39,12 @@ guides/
 │   └── llm-guide.md      # iOS-specific integration guide
 ├── android/
 │   └── llm-guide.md      # Android-specific integration guide
-└── flutter/
-    └── llm-guide.md      # Flutter-specific integration guide
+├── flutter/
+│   └── llm-guide.md      # Flutter-specific integration guide
+├── ionic/
+│   └── llm-guide.md      # Ionic (Capacitor) integration guide
+└── react-native/
+    └── llm-guide.md      # React Native integration guide
 ```
 
 ## For LLMs
@@ -67,4 +71,6 @@ When adding a new platform guide:
 - [Tenjin iOS SDK](https://github.com/tenjin/tenjin-ios-sdk)
 - [Tenjin Android SDK](https://github.com/tenjin/tenjin-android-sdk)
 - [Tenjin Flutter SDK](https://github.com/tenjin/flutter-sdk)
+- [Tenjin Ionic SDK](https://github.com/tenjin/tenjin-ionic-sdk)
+- [Tenjin React Native SDK](https://github.com/tenjin/tenjin-react-native-sdk)
 - [Tenjin Documentation](https://docs.tenjin.com/)
