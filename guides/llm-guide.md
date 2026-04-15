@@ -29,7 +29,7 @@ Once you know the platform, fetch the corresponding guide:
 | Android | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/android/llm-guide.md` |
 | Flutter | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/flutter/llm-guide.md` |
 | Ionic | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ionic/llm-guide.md` |
-| Unity | Coming soon |
+| Unity | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/unity/llm-guide.md` |
 | React Native | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/react-native/llm-guide.md` |
 
 ## Step 3: Follow the Guide
