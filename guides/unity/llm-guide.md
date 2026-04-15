@@ -33,11 +33,13 @@ Before writing any integration code:
 
 ### Option A: Unity Package Manager (UPM) - Recommended
 
-1. Open the Package Manager window (`Window > Package Manager`).
-2. Click the `+` button in the toolbar and select **Install package from git URL**.
-3. Enter the following URL (append `#` followed by the latest version tag):
-   `https://github.com/tenjin/tenjin-unity-sdk.git#1.16.3`
-4. Click **Install**.
+- Open `Packages/manifest.json`
+- Locate the `"dependencies"` object
+- Add the following entry if not there already:
+
+```json
+"com.tenjin.unity-sdk": "https://github.com/tenjin/tenjin-unity-sdk.git#1.16.3"
+```
 
 ### Option B: Manual Installation
 
@@ -80,6 +82,7 @@ Initialize and connect the SDK in a script that runs on startup (e.g., attached 
 
 ```csharp
 using UnityEngine;
+using System;
 
 public class TenjinManager : MonoBehaviour
 {
@@ -93,7 +96,19 @@ public class TenjinManager : MonoBehaviour
         #endif
 
         // Connect sends install/session data
+#if UNITY_IOS
+        if (new Version(UnityEngine.iOS.Device.systemVersion).CompareTo(new Version("14.0")) >= 0) {
+            // Tenjin wrapper for requestTrackingAuthorization
+            instance.RequestTrackingAuthorizationWithCompletionHandler((status) => {
+                Debug.Log("App Tracking Transparency Authorization Status: " + status);
+                instance.Connect();
+            });
+        } else {
+            instance.Connect();
+        }
+#else
         instance.Connect();
+#endif
     }
 }
 ```
