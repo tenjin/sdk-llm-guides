@@ -43,8 +43,10 @@ guides/
 │   └── llm-guide.md      # Flutter-specific integration guide
 ├── ionic/
 │   └── llm-guide.md      # Ionic (Capacitor) integration guide
-└── react-native/
-    └── llm-guide.md      # React Native integration guide
+├── react-native/
+│   └── llm-guide.md      # React Native integration guide
+└── unity/
+    └── llm-guide.md      # Unity integration guide
 ```
 
 ## For LLMs
