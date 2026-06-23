@@ -158,6 +158,37 @@ instance.Transaction(ProductId, CurrencyCode, Quantity, UnitPrice, null, Receipt
 instance.Transaction(ProductId, CurrencyCode, Quantity, UnitPrice, TransactionId, Receipt, null);
 ```
 
+### Subscription Tracking
+
+Track subscription purchases for server-side verification and attribution on **iOS** and **Android** (Android requires Unity SDK **1.18.0+**). The same `Subscription` method serves both platforms — pass the iOS params on iOS and the Android params on Android, leaving the others `null`.
+
+```csharp
+BaseTenjin instance = Tenjin.getInstance("<SDK_KEY>");
+
+// iOS — pass StoreKit 2 transaction data
+instance.Subscription(
+    productId, currencyCode, unitPrice,
+    transactionId, originalTransactionId, receipt, skTransaction,  // iOS params
+    null, null, null                                               // Android params
+);
+
+// iOS — or let the SDK fetch the SK2 transaction natively (iOS 16+, recommended for RevenueCat)
+instance.SubscriptionWithStoreKit(productId, currencyCode, unitPrice);
+
+// Android — pass Google Play purchase data
+instance.Subscription(
+    productId, currencyCode, unitPrice,
+    null, null, null, null,                       // iOS params
+    purchaseToken, purchaseData, dataSignature    // Android params (purchaseData = original JSON)
+);
+```
+
+On Android, extract `purchaseData` (the original JSON) and `dataSignature` from the Unity IAP Google Play receipt `Payload`, and read `purchaseToken` from the original JSON. `SubscriptionWithStoreKit` is iOS-only and no-ops on Android.
+
+**Notes:**
+- Send **one transaction per billing interval** (at first charge and each renewal); do **not** send during free trials.
+- Add your App-Specific Shared Secret (iOS) / Base64-encoded RSA public key (Android) in the Tenjin dashboard.
+
 ---
 
 ## 6. Custom Events

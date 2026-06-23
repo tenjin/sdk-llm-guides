@@ -227,6 +227,37 @@ instance.transactionAmazon(
 instance.transaction("premium_upgrade", "USD", 1, 9.99);
 ```
 
+### Subscription Tracking
+
+Track subscription purchases for server-side verification and attribution. Requires Tenjin Android SDK **1.20.0+** and the Google Play Billing Library on your classpath. Add your **Base64-encoded RSA public key** in the Tenjin dashboard first.
+
+The simplest path passes the Google Play Billing `Purchase` object directly (price and currency come from the matching `ProductDetails` pricing phase, since they are not on the `Purchase`):
+
+```java
+// Inside your purchase callback, for a subscription purchase
+instance.subscription(purchase, 9.99, "USD");  // (Purchase, double price, String currency)
+```
+
+Or pass the fields manually:
+
+```java
+instance.subscription(
+    productId,      // String
+    purchaseToken,  // String (Purchase.getPurchaseToken())
+    9.99,           // double price
+    "USD",          // String currency
+    purchaseDate,   // long  (Purchase.getPurchaseTime(), epoch millis)
+    originalJson,   // String (Purchase.getOriginalJson())
+    signature       // String (Purchase.getSignature())
+);
+```
+
+**Notes:**
+- Send **one transaction per billing interval** (at first charge and each renewal)
+- Do **not** send transactions during free trial periods
+- Tenjin does not de-duplicate transactions
+- See [Google Play Billing subscriptions](https://developer.android.com/google/play/billing/subscriptions) for purchase handling
+
 ---
 
 ## 5. Custom Events
@@ -436,6 +467,7 @@ When integrating Tenjin into an Android project, verify these items:
 | `eventWithNameAndValue(String, int)` | Custom event with integer value |
 | `transaction(...)` | Google Play purchase with validation |
 | `transactionAmazon(...)` | Amazon purchase with validation |
+| `subscription(...)` | Subscription tracking (1.20.0+) |
 | `getDeeplink(Handler)` | Retrieve deferred deep link parameters |
 
 ### Privacy & Consent
