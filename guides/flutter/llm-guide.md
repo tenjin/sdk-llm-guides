@@ -317,7 +317,7 @@ void trackSubscription(PurchaseDetails purchase, ProductDetails product) {
       currencyCode: product.currencyCode,
       unitPrice: product.rawPrice,
       androidPurchaseToken: androidPurchase.billingClientPurchase.purchaseToken,
-      androidPurchaseData: purchase.verificationData.localVerificationData,
+      androidPurchaseData: androidPurchase.billingClientPurchase.originalJson,
       androidDataSignature: androidPurchase.billingClientPurchase.signature,
     );
   }

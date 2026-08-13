@@ -217,6 +217,41 @@ Tenjin.transaction(
 );
 ```
 
+### Subscription Tracking
+
+Track subscription purchases for server-side verification and attribution on **iOS** and **Android** (Android requires `react-native-tenjin` **1.4.0+**). Pass the iOS params on iOS and the Android params on Android.
+
+```javascript
+Tenjin.subscription({
+  productId: 'com.example.monthly',  // Required
+  currencyCode: 'USD',               // Required
+  unitPrice: 9.99,                   // Required
+  // iOS parameters
+  iosTransactionId: '...',
+  iosOriginalTransactionId: '...',
+  iosReceipt: '...',                 // JWS signed transaction
+  iosSKTransaction: '...',           // SK2 transaction jsonRepresentation
+  // Android parameters
+  androidPurchaseToken: '...',       // Google Play purchase token
+  androidPurchaseData: '...',        // original JSON from the purchase object
+  androidDataSignature: '...',       // signature for purchase verification
+});
+
+// iOS-only: let the SDK fetch the SK2 transaction natively (recommended for RevenueCat).
+// No-ops / invokes the error callback on Android.
+Tenjin.subscriptionWithStoreKit(
+  'com.example.monthly', 'USD', 9.99,
+  () => {},                       // success
+  (error) => console.error(error) // error
+);
+```
+
+With `react-native-iap`, read the Android fields from the purchase object (`purchaseTokenAndroid`, `dataAndroid`, `signatureAndroid`). See the SDK's `SUBSCRIPTIONS_TRACKING.md` for full `react-native-iap` and RevenueCat examples.
+
+**Notes:**
+- Send **one transaction per billing interval** (at first charge and each renewal); do **not** send during free trials.
+- Add your App-Specific Shared Secret (iOS) / Base64-encoded RSA public key (Android) in the Tenjin dashboard.
+
 ---
 
 ## 6. Custom Events
@@ -412,6 +447,8 @@ When integrating Tenjin into a React Native project, verify these items:
 | `eventWithName(name)` | Custom event (name only) |
 | `eventWithNameAndValue(name, value)` | Custom event with string value |
 | `transaction(product, currency, qty, price)` | Revenue tracking |
+| `subscription({...})` | Subscription tracking (iOS + Android) |
+| `subscriptionWithStoreKit(id, currency, price, ok, err)` | iOS-only native SK2 subscription fetch |
 
 ### SKAdNetwork (iOS)
 

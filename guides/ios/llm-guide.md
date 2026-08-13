@@ -263,6 +263,41 @@ When not using Apple's transaction objects directly:
 
 ### Subscription IAP
 
+Track subscription purchases for server-side verification and attribution.
+
+```swift
+// Pass StoreKit 2 transaction data manually
+TenjinSDK.subscription(withProductName: "com.example.monthly",
+                       andCurrencyCode: "USD",
+                       andUnitPrice: NSDecimalNumber(string: "9.99"),
+                       andTransactionId: "2000000123456789",
+                       andOriginalTransactionId: "2000000123456789",
+                       andBase64Receipt: "jws_or_base64_receipt",
+                       andSKTransaction: "{\"id\": 2000000123456789, ...}")
+
+// Or let the SDK fetch the SK2 transaction natively (iOS 16+).
+// Recommended for IAP libraries that don't expose SK2 data (e.g., RevenueCat).
+TenjinSDK.subscription(withStoreKitForProductId: "com.example.monthly",
+                       andCurrencyCode: "USD",
+                       andUnitPrice: NSDecimalNumber(string: "9.99"))
+```
+
+```objectivec
+[TenjinSDK subscriptionWithProductName:@"com.example.monthly"
+                       andCurrencyCode:@"USD"
+                          andUnitPrice:[NSDecimalNumber decimalNumberWithString:@"9.99"]
+                      andTransactionId:@"2000000123456789"
+              andOriginalTransactionId:@"2000000123456789"
+                      andBase64Receipt:@"jws_or_base64_receipt"
+                      andSKTransaction:@"{\"id\": 2000000123456789, ...}"];
+
+// iOS 16+ native StoreKit 2 fetch
+[TenjinSDK subscriptionWithStoreKitForProductId:@"com.example.monthly"
+                                andCurrencyCode:@"USD"
+                                   andUnitPrice:[NSDecimalNumber decimalNumberWithString:@"9.99"]];
+```
+
+**Notes:**
 - Add your app's **App-Specific Shared Secret** in the [Tenjin dashboard](https://www.tenjin.com/dashboard/apps)
 - Send **one transaction per billing interval** (at first charge and each renewal)
 - Do **not** send transactions during free trial periods
@@ -570,6 +605,8 @@ When integrating Tenjin into an iOS project, verify these items:
 | `sendEventWithName(_:andValue:)` | Custom event with integer value |
 | `transaction(_:andReceipt:)` | StoreKit 1 purchase |
 | `transactionWithProductName(...)` | Manual revenue or StoreKit 2 |
+| `subscriptionWithProductName(...)` | Subscription tracking with full transaction data |
+| `subscriptionWithStoreKitForProductId(...)` | Native SK2 subscription fetch (iOS 16+) |
 | `updatePostbackConversionValue(_:)` | SKAdNetwork conversion value |
 
 ### Privacy & Consent
