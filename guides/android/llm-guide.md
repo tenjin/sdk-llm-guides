@@ -27,7 +27,7 @@ Before writing any integration code:
 
 **Ask the developer for their Tenjin SDK key.** Every code example in this document uses `<SDK_KEY>` as a placeholder. Before writing any integration code, prompt the user:
 
-> "What is your Tenjin SDK key? You can find it in the [Tenjin dashboard](https://www.tenjin.io/dashboard/organizations) on your app's page. Each app has up to 3 unique keys. If you don't have it handy, I can use a placeholder and you can fill it in later — just search your project for `TENJIN_SDK_KEY_PLACEHOLDER` to find it."
+> "What is your Tenjin SDK key? You can find it in the [Tenjin dashboard](https://www.tenjin.com/dashboard/organizations) on your app's page. Each app has up to 3 unique keys. If you don't have it handy, I can use a placeholder and you can fill it in later — just search your project for `TENJIN_SDK_KEY_PLACEHOLDER` to find it."
 
 If the developer provides their key, substitute it directly in all generated code. If they prefer to add it later, use the literal string `TENJIN_SDK_KEY_PLACEHOLDER` so it is easy to find with a project-wide search.
 
@@ -430,7 +430,7 @@ When integrating Tenjin into an Android project, verify these items:
 - [ ] **Google Play dependencies** (AAID, AppSetID, Install Referrer) are included.
 - [ ] **Proguard rules** are added if using obfuscation.
 - [ ] **`<SDK_KEY>`** placeholder is replaced with the actual key.
-- [ ] Integration is verified using the [Live Test Device Data Tool](https://www.tenjin.io/dashboard/sdk_diagnostics).
+- [ ] Integration is verified using the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics).
 
 ---
 
