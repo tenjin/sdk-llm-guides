@@ -24,6 +24,14 @@ Integration guides for the Tenjin SDK, written to be consumed by LLMs and AI cod
 
 Keep `README.md`, `guides/llm-guide.md`, `llms.txt`, and `skills/` in sync whenever guides are added, removed, or renamed.
 
+## Standards and specifications
+
+This repo follows three open standards for LLM/agent-facing documentation. When editing the corresponding files, conform to the spec:
+
+- **llms.txt** (`llms.txt`): [specification](https://llmstxt.org) | [GitHub](https://github.com/AnswerDotAI/llms-txt). Required format: one H1 title, a blockquote summary, optional prose, then H2 sections containing markdown link lists (`- [name](url): description`). An `## Optional` section marks links that can be skipped when context is short.
+- **Agent Skills** (`skills/*/SKILL.md`): [specification](https://agentskills.io/specification) | [GitHub](https://github.com/agentskills/agentskills). Required YAML frontmatter: `name` (lowercase alphanumerics and hyphens, max 64 chars, must match the parent directory name) and `description` (max 1024 chars, must say what the skill does and when to use it). Keep `SKILL.md` under 500 lines. Skills can be validated with the [`skills-ref`](https://github.com/agentskills/agentskills/tree/main/skills-ref) reference tool: `skills-ref validate ./skills/tenjin-ios`.
+- **AGENTS.md** (this file): [specification](https://agents.md) | [GitHub](https://github.com/agentsmd/agents.md). Intentionally minimal: plain markdown at the repo root, no required structure.
+
 ## Pull requests
 
 - Follow `.github/pull_request_template.md`: link the Jira ticket (`https://adromance.atlassian.net/browse/TENJIN-…`), describe proposed changes, and provide testing steps.
