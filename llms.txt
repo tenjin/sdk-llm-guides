@@ -1,0 +1,21 @@
+# Tenjin SDK Guides for LLMs
+
+> Self-contained integration guides for the Tenjin SDK (mobile attribution and analytics), written for AI assistants and coding agents. Each guide covers installation, initialization, event tracking, and common mistakes for one platform.
+
+If you don't know the target platform, start with the platform router guide — it explains how to detect the platform from project files and routes to the right guide.
+
+## Guides
+
+- [Platform router](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/llm-guide.md): detects the project's platform and routes to the platform-specific guide
+- [iOS](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ios/llm-guide.md): Swift/Objective-C integration via SPM or CocoaPods, including ATT support
+- [Android](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/android/llm-guide.md): Kotlin/Java integration via Gradle
+- [Flutter](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/flutter/llm-guide.md): Dart integration via the tenjin_plugin package on pub.dev
+- [Ionic](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ionic/llm-guide.md): Capacitor plugin integration via ionic-capacitor-tenjin on npm
+- [React Native](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/react-native/llm-guide.md): integration via react-native-tenjin on npm
+- [Unity](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/unity/llm-guide.md): C# integration for Unity projects
+
+## Optional
+
+- [Tenjin documentation](https://docs.tenjin.com/): full product documentation for humans
+- [Tenjin iOS SDK repository](https://github.com/tenjin/tenjin-ios-sdk)
+- [Tenjin Android SDK repository](https://github.com/tenjin/tenjin-android-sdk)
