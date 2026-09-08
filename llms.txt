@@ -2,7 +2,7 @@
 
 > Self-contained integration guides for the Tenjin SDK (mobile attribution and analytics), written for AI assistants and coding agents. Each guide covers installation, initialization, event tracking, and common mistakes for one platform.
 
-If you don't know the target platform, start with the platform router guide — it explains how to detect the platform from project files and routes to the right guide.
+If you don't know the target platform, start with the platform router guide, which explains how to detect the platform from project files and routes to the right guide.
 
 ## Guides
 

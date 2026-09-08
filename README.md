@@ -34,9 +34,9 @@ Add Tenjin SDK to my project using: <url-from-table>
 
 This repo also implements the emerging LLM/agent documentation standards:
 
-- [`llms.txt`](llms.txt) — index of all guides, per the [llms.txt spec](https://llmstxt.org)
-- [`skills/`](skills/) — one [Agent Skill](https://agentskills.io) per platform; copy `skills/tenjin-{platform}` into your agent's skills directory (e.g. `.claude/skills/`) and ask it to integrate Tenjin
-- [`AGENTS.md`](AGENTS.md) — instructions for agents contributing to this repo, per the [AGENTS.md spec](https://agents.md)
+- [`llms.txt`](llms.txt): index of all guides, per the [llms.txt spec](https://llmstxt.org)
+- [`skills/`](skills/): one [Agent Skill](https://agentskills.io) per platform; copy `skills/tenjin-{platform}` into your agent's skills directory (e.g. `.claude/skills/`) and ask it to integrate Tenjin
+- [`AGENTS.md`](AGENTS.md): instructions for agents contributing to this repo, per the [AGENTS.md spec](https://agents.md)
 
 ## Repository Structure
 
