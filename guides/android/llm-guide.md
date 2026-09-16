@@ -229,9 +229,11 @@ instance.transaction("premium_upgrade", "USD", 1, 9.99);
 
 ### Subscription Tracking
 
-Track subscription purchases for server-side verification and attribution. Requires Tenjin Android SDK **1.20.0+** and the Google Play Billing Library on your classpath. Add your **Base64-encoded RSA public key** in the Tenjin dashboard first.
+Track subscription purchases for server-side verification and attribution. Requires Tenjin Android SDK **1.22.0+** and Google Play Billing Library **5.0+** on the classpath. Tenjin resolves the subscription server-side through the Google Play Developer API, so the app must have Google Play Developer API credentials configured in the Tenjin dashboard first (this is separate from the Base64-encoded RSA public key used for one-time IAP validation).
 
-The simplest path passes the Google Play Billing `Purchase` object directly (price and currency come from the matching `ProductDetails` pricing phase, since they are not on the `Purchase`):
+Full guide: [SUBSCRIPTIONS_TRACKING.md](https://github.com/tenjin/tenjin-android-sdk/blob/master/SUBSCRIPTIONS_TRACKING.md)
+
+The simplest path passes the Google Play Billing `Purchase` object directly. The parameter is typed `Object`, not `Purchase`, because Play Billing is an optional (`compileOnly`) dependency of the Tenjin SDK — pass the `Purchase` and it is cast internally. Price and currency come from the matching `ProductDetails` pricing phase, since they are not on the `Purchase`:
 
 ```java
 // Inside your purchase callback, for a subscription purchase
@@ -253,9 +255,11 @@ instance.subscription(
 ```
 
 **Notes:**
-- Send **one transaction per billing interval** (at first charge and each renewal)
-- Do **not** send transactions during free trial periods
-- Tenjin does not de-duplicate transactions
+- **Opt-in:** `connect()` does not capture subscriptions automatically — `subscription(...)` must be called explicitly at purchase time. This is the most common cause of "general events arrive but subscription events don't"
+- `productId` and `purchaseToken` are required; the call is dropped if either is empty. The other fields are optional
+- Send **one event per subscription**, not one per renewal — Tenjin resolves renewals, trials and cancellations server-side from the purchase token. Repeat sends for the same purchase token are de-duplicated
+- Also send subscriptions returned by `queryPurchasesAsync` so restores and purchases made on other devices are covered
+- Acknowledge the purchase (`acknowledgePurchase`) — Google Play refunds subscriptions not acknowledged within three days
 - See [Google Play Billing subscriptions](https://developer.android.com/google/play/billing/subscriptions) for purchase handling
 
 ---
@@ -467,7 +471,7 @@ When integrating Tenjin into an Android project, verify these items:
 | `eventWithNameAndValue(String, int)` | Custom event with integer value |
 | `transaction(...)` | Google Play purchase with validation |
 | `transactionAmazon(...)` | Amazon purchase with validation |
-| `subscription(...)` | Subscription tracking (1.20.0+) |
+| `subscription(...)` | Subscription tracking (1.22.0+) |
 | `getDeeplink(Handler)` | Retrieve deferred deep link parameters |
 
 ### Privacy & Consent
