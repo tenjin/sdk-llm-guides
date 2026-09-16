@@ -349,11 +349,22 @@ await Tenjin.eventAdImpressionAppLovin({
 
 ### AdMob
 
+> **Important:** despite its name, `value_micros` is **not** in micros on iOS. The iOS SDK reads it as
+> currency units (e.g. `0.01` USD); the Android SDK reads it as micros (e.g. `10000`).
+> AdMob plugins report micros, so divide by 1,000,000 on iOS only.
+> Sending raw micros on iOS inflates ad revenue 1,000,000x; dividing on Android reports 1,000,000x too little.
+
 ```typescript
+import { Capacitor } from '@capacitor/core';
+
+// valueMicros comes from the AdMob paid-event callback, in micros
+const valueMicros = 10000;
+const isIOS = Capacitor.getPlatform() === 'ios';
+
 await Tenjin.eventAdImpressionAdMob({
   json: {
     ad_unit_id: 'ca-app-pub-xxx/yyy',
-    value_micros: 10000,
+    value_micros: isIOS ? valueMicros / 1000000 : valueMicros,
     currency_code: 'USD',
     precision_type: 1
   }
@@ -507,6 +518,7 @@ When integrating Tenjin into an Ionic Capacitor project, verify these items:
 | Missing `AD_ID` permission on Android 13+ | Cannot access AAID, degrades attribution quality | Add the permission to AndroidManifest.xml |
 | Event names over 80 characters | Will be rejected | Keep event names concise |
 | Exceeding 500 unique event names | Additional events will be dropped | Reuse event names with different values |
+| Sending AdMob `value_micros` without platform branching | iOS reads it as currency units, Android as micros; revenue is off by 1,000,000x | Divide the micros value by 1,000,000 on iOS only |
 | Using SKAN methods on Android | They do nothing on Android | Check platform before calling |
 | Missing `developer_device_id` in opt-in params | Events will not be processed | Always include `developer_device_id` in `optInParams` |
 

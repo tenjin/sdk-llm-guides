@@ -456,9 +456,30 @@ TenjinSDK.subscribeIronSourceImpressions()
 
 ### AdMob
 
+Prefer the native method: it reads `GADAdValue` directly, so no unit conversion is needed.
+
 ```objectivec
 // In your ad delegate callback
 [TenjinSDK handleAdMobILRD:bannerView :adValue];
+```
+
+If you build the payload yourself (e.g. impression data arrives from elsewhere), use the JSON method.
+
+> **Important:** despite its name, `value_micros` is **not** in micros on iOS. The iOS SDK reads it as
+> currency units, which is what `GADAdValue.value` already returns (e.g. `0.012245` USD).
+> Only divide by 1,000,000 if your value came from an API that reports micros, such as the Android,
+> Unity, Flutter or React Native AdMob plugins. Sending raw micros here inflates ad revenue 1,000,000x.
+
+```objectivec
+NSString *json = @"{"
+    "\"ad_unit_id\": \"ca-app-pub-xxx/yyy\","
+    "\"value_micros\": 0.012245,"          // currency units, not micros
+    "\"currency_code\": \"USD\","
+    "\"precision_type\": \"3\","
+    "\"response_id\": \"<RESPONSE_ID>\","
+    "\"mediation_adapter_class_name\": \"GADMAdapterGoogleAdMobAds\""
+"}";
+[TenjinSDK adMobImpressionFromJSON:json];
 ```
 
 ### TopOn
@@ -581,6 +602,7 @@ When integrating Tenjin into an iOS project, verify these items:
 | Using deprecated `init:` methods | Will be removed in a future version | Use `initialize:` (ObjC) or `getInstance()` (Swift) |
 | Event names over 80 characters | Will be rejected | Keep event names concise |
 | Exceeding 500 unique event names | Additional events will be dropped | Reuse event names with different values |
+| Dividing AdMob `value_micros` by 1,000,000 before sending | iOS expects currency units, which `GADAdValue.value` already returns; dividing reports 1,000,000x too little | Send `GADAdValue.value` as-is, or use `handleAdMobILRD:` |
 | Sending subscription transactions during trial | Inflates revenue metrics | Only send at first charge and renewals |
 | Missing `developer_device_id` in opt-in params | Events will not be processed | Always include `developer_device_id` in `optInParams` |
 

@@ -355,20 +355,40 @@ Specific methods are provided for various mediation platforms:
 
 ```java
 // AppLovin MAX
-instance.eventApplovin(maxAd);
+instance.eventAdImpressionAppLovin(maxAd);
 
 // Unity LevelPlay (IronSource)
-instance.eventIronsource(impressionData);
+instance.eventAdImpressionIronSource(impressionData);
 
 // AdMob
-instance.eventAdmob(adValue);
+adView.setOnPaidEventListener(adValue -> instance.eventAdImpressionAdMob(adValue, adView));
+
+// AdMob Next Gen (com.google.android.libraries.ads.mobile.sdk)
+instance.eventAdImpressionAdMobNextGen(adValue, ad);
+
+// HyperBid
+instance.eventAdImpressionHyperBid(hbAdInfo);
 
 // TopOn
-instance.eventTopon(toponData);
+instance.eventAdImpressionTopOn(atAdInfo);
 
 // CAS
-instance.eventCas(casData);
+instance.eventAdImpressionCAS(casAdInfo);
+
+// TradPlus
+instance.eventAdImpressionTradPlus(tradPlusAdInfo);
 ```
+
+Each method also accepts a JSON `String` or `JSONObject` if you build the payload yourself.
+
+### AdMob value units
+
+Prefer `eventAdImpressionAdMob(adValue, ad)`: it reads `AdValue` directly, so no unit conversion is needed.
+
+> **Important:** if you build the JSON payload yourself, `value_micros` must be **raw micros** on Android
+> (e.g. `12245`), exactly as `AdValue.getValueMicros()` returns it. Do not divide by 1,000,000 — that
+> reports 1,000,000x too little. The iOS SDK is the opposite: it expects currency units for the same key,
+> so cross-platform code must branch on the platform.
 
 ---
 
@@ -444,6 +464,7 @@ When integrating Tenjin into an Android project, verify these items:
 | Sending events before `connect()` | Events will not be processed | Always call `connect()` first |
 | Event names over 80 characters | Will be rejected | Keep event names concise |
 | Exceeding 500 unique event names | Additional events will be dropped | Reuse event names with different values |
+| Dividing AdMob `value_micros` by 1,000,000 before sending | Android expects raw micros from `getValueMicros()`; dividing reports 1,000,000x too little | Send the micros value as-is, or use `eventAdImpressionAdMob(adValue, ad)` |
 | Hardcoding `googleplay` for Amazon builds | Revenue validation will fail | Set `TENJIN_APP_STORE` to `amazon` for Amazon builds |
 
 ---
