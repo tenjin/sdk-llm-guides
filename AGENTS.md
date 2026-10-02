@@ -26,6 +26,7 @@ python3 scripts/update_sdk_symbols.py    # regenerate sdk-symbols/ from the publ
 
 - `sdk-symbols/{platform}.json` is generated, never edited by hand. It lists the public API of the newest published SDK, taken from Maven Central (Android), CocoaPods and the public GitHub repository (iOS), pub.dev (Flutter), npm (React Native, Ionic) and GitHub release tags (Unity).
 - When an SDK releases, run `update_sdk_symbols.py`, then `check_guides.py`, and fix whatever the new release broke. A scheduled workflow fails when `sdk-symbols/` is behind the registries.
+- Swift call sites are checked against the names the Swift compiler gives the iOS API (`opt(inParams:)`, not `optInParams(_:)`), which are read with `swift-symbolgraph-extract`. Regenerating `ios.json` for a new iOS SDK version therefore needs macOS with Xcode; the other platforms regenerate anywhere.
 - In code blocks, call the SDK through a recognisable receiver so the checker sees the call: `instance` or `TenjinSDK` (Android), `TenjinSDK` (iOS), `TenjinSDK.instance` (Flutter), `Tenjin` (React Native, Ionic), `instance` or `Tenjin` (Unity), or a variable assigned from one of those in the same guide.
 - The checker does not compile anything. It does not check argument types, calls into other libraries, XML or Gradle contents, or prose. Read those against the SDK source yourself.
 

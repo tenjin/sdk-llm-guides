@@ -335,28 +335,10 @@ def check_android(report, start, code, symbols, guide_code):
 # ios (objective-c, swift)
 # ---------------------------------------------------------------------------
 
-def swift_candidates(selector, info):
-    """Swift spellings (base, labels) a selector can be called with."""
-    candidates = set()
-    if "swift_name" in info:
-        base, labels = re.match(r"(\w+)\((.*)\)", info["swift_name"]).groups()
-        candidates.add((base, tuple(label for label in labels.split(":") if label)))
-    if ":" not in selector:
-        candidates.add((selector, ()))
-        return candidates
-    parts = selector.split(":")[:-1]
-    rest = tuple(part or "_" for part in parts[1:])
-    first = parts[0]
-    candidates.add((first, ("_",) + rest))
-    for index in range(1, len(first)):
-        if first[index].isupper():
-            base, word = first[:index], first[index:]
-            candidates.add((base, (word[0].lower() + word[1:],) + rest))
-            # Swift drops "With" before a completion handler:
-            # fooWithCompletionHandler: is called as foo(completionHandler:).
-            if word in ("WithCompletionHandler", "WithCompletion", "WithHandler", "WithBlock"):
-                candidates.add((base, (word[4].lower() + word[5:],) + rest))
-    return candidates
+def swift_signature(name):
+    """'sendEvent(withName:andValue:)' -> ('sendEvent', ('withName', 'andValue'))"""
+    base, labels = re.match(r"(\w+)\((.*)\)$", name).groups()
+    return base, tuple(label for label in labels.split(":") if label)
 
 
 def swift_labels(args):
@@ -368,62 +350,73 @@ def swift_labels(args):
 
 
 def check_swift(report, start, code, symbols, guide_code):
+    """Swift calls are matched against the names the Swift compiler gives the API
+    (sdk-symbols/ios.json, "swift"), not against the Objective-C selectors."""
     text = clean(code)
-    selectors = symbols["selectors"]
-    profile = symbols["types"].get("TJNUserProfileData", {"properties": [], "selectors": {}})
-
-    index_by_call = {}
-    for selector, info in selectors.items():
-        for candidate in swift_candidates(selector, info):
-            index_by_call.setdefault(candidate, []).append(selector)
-    bases = {base for base, _ in index_by_call}
+    sdk = symbols["swift"]["types"]["TenjinSDK"]
+    profile = symbols["swift"]["types"].get("TJNUserProfileData", {"properties": [], "methods": []})
 
     instances = set(re.findall(
-        r"(?:let|var)\s+(\w+)\s*=\s*TenjinSDK\s*\.\s*(?:getInstance|sharedInstance|initialize)\b", guide_code))
+        r"(?:let|var)\s+(\w+)\s*(?::\s*TenjinSDK\s*[!?]?\s*)?=\s*TenjinSDK\s*\.\s*(?:getInstance|sharedInstance|initialize)\b",
+        guide_code))
     profiles = set(re.findall(r"(?:let|var)\s+(\w+)\s*=\s*TenjinSDK\s*\.\s*getUserProfile\s*\(\s*\)", guide_code))
 
-    def check_use(use, kind):
+    def check_use(use, group):
         name, args, block, index, end = use
         line = start + line_of(code, index)
         if args is None:
             return
-        if name not in bases:
-            report.error(line, "TenjinSDK has no method `%s` (Swift)" % name)
-            return
+        available = {swift_signature(item): item for item in sdk[group]}
+        other = "methods" if group == "type_methods" else "type_methods"
         labels = swift_labels(args)
-        found = list(index_by_call.get((name, labels), []))
-        if block:
-            for (base, candidate_labels), names in index_by_call.items():
-                if base == name and candidate_labels[:-1] == labels and candidate_labels:
-                    found.extend(names)
-        found = [selector for selector in found if selectors[selector]["kind"] == kind]
-        if not found:
+        found = available.get((name, labels))
+        if found is None and block:
+            for (base, candidate), item in available.items():
+                if base == name and candidate and candidate[:-1] == labels:
+                    found = item
+        if found is None:
             shown = "%s(%s)" % (name, "".join(label + ":" for label in labels))
-            report.error(line, "no %s method of TenjinSDK matches the Swift call `%s`"
-                         % ("class" if kind == "+" else "instance", shown))
+            same_base = sorted(item for (base, _), item in available.items() if base == name)
+            if same_base:
+                report.error(line, "Swift: TenjinSDK has no `%s`; it has %s"
+                             % (shown, ", ".join("`%s`" % item for item in same_base)))
+            elif any(swift_signature(item)[0] == name for item in sdk[other]):
+                report.error(line, "Swift: `%s` is %s method, the guide calls it on %s"
+                             % (name, "an instance" if group == "type_methods" else "a class",
+                                "the class" if group == "type_methods" else "an instance"))
+            else:
+                report.error(line, "Swift: TenjinSDK has no method `%s`" % name)
             return
-        if all(selectors[selector].get("deprecated") for selector in found):
-            report.error(line, "`%s` is deprecated in the SDK header" % found[0])
+        if found in sdk["deprecated"]:
+            report.error(line, "Swift: `%s` is deprecated in the SDK" % found)
             return
         report.ok()
 
     for use in member_uses(text, "TenjinSDK"):
-        check_use(use, "+")
+        check_use(use, "type_methods")
         if use[0] in ("sharedInstance", "getInstance", "initialize") and use[1] is not None:
             chained = chained_use(text, use[4])
             if chained:
-                check_use(chained, "-")
+                check_use(chained, "methods")
     if instances:
         for use in member_uses(text, "|".join(sorted(map(re.escape, instances)))):
-            check_use(use, "-")
+            check_use(use, "methods")
 
     for receiver in profiles:
         for name, args, block, index, end in member_uses(text, re.escape(receiver)):
             line = start + line_of(code, index)
             if args is None and name not in profile["properties"]:
-                report.error(line, "TJNUserProfileData has no property `%s`" % name)
+                report.error(line, "Swift: TJNUserProfileData has no property `%s`" % name)
             else:
                 report.ok()
+
+    # `let x = TenjinSDK.getInstance(...)` infers `TenjinSDK?`; using x without unwrapping does not compile.
+    for match in re.finditer(r"(?:let|var)\s+(\w+)\s*=\s*TenjinSDK\s*\.\s*(?:getInstance|sharedInstance|initialize)\b", text):
+        variable = match.group(1)
+        if re.search(r"(?<![\w.])%s\s*\.\s*\w+" % re.escape(variable), text[match.end():]):
+            report.error(start + line_of(code, match.start()),
+                         "Swift: `%s` is inferred as `TenjinSDK?`; declare it as `let %s: TenjinSDK = ...` "
+                         "or unwrap it before calling methods on it" % (variable, variable))
 
     raw = strip_comments_only(code)
     imports = re.findall(r"(?m)^\s*import\s+(\w+)", raw)

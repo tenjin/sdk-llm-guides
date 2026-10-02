@@ -88,23 +88,44 @@ class IosTest(CheckerTest):
         self.flagged("ios", "swift", 'import SwiftUI\n\nTenjinSDK.getInstance("<SDK_KEY>")', "not `import TenjinSDK`")
 
     def test_swift_wrong_label(self):
-        self.flagged("ios", "swift", 'TenjinSDK.sendEvent(name: "level_complete")', "matches the Swift call")
+        self.flagged("ios", "swift", 'TenjinSDK.sendEvent(name: "level_complete")', "has no `sendEvent(name:)`")
 
     def test_swift_unknown_method(self):
         self.flagged("ios", "swift", 'TenjinSDK.trackEvent("level_complete")', "no method `trackEvent`")
+
+    def test_swift_name_is_not_derived_from_the_selector(self):
+        # The selectors are subscriptionWithStoreKitForProductId:... and optInParams:,
+        # but Swift imports them under other names.
+        self.flagged("ios", "swift",
+                     'TenjinSDK.subscription(withStoreKitForProductId: "p", andCurrencyCode: "USD", andUnitPrice: price)',
+                     "has no `subscription(withStoreKitForProductId:andCurrencyCode:andUnitPrice:)`")
+        self.flagged("ios", "swift", 'TenjinSDK.optInParams(["ip_address"])', "no method `optInParams`")
+        self.clean("ios", "swift",
+                   'TenjinSDK.subscriptionWithStoreKit(forProductId: "p", andCurrencyCode: "USD", andUnitPrice: price)')
+        self.clean("ios", "swift", 'TenjinSDK.opt(inParams: ["ip_address"])')
+
+    def test_swift_deprecated(self):
+        self.flagged("ios", "swift", "TenjinSDK.registerAppForAdNetworkAttribution()", "deprecated")
 
     def test_swift_valid_calls(self):
         self.clean("ios", "swift", 'TenjinSDK.sendEvent(withName: "coins", andValue: 5)')
         self.clean("ios", "swift", 'TenjinSDK.updatePostbackConversionValue(5, coarseValue: "medium")')
         self.clean("ios", "swift", "TenjinSDK.handleOpenURL(url)")
+        self.clean("ios", "swift", "TenjinSDK.requestTrackingAuthorization { status in }")
         self.clean("ios", "swift",
-                   'let instance = TenjinSDK.getInstance("<SDK_KEY>")\n'
+                   'let instance: TenjinSDK = TenjinSDK.getInstance("<SDK_KEY>")\n'
                    "instance.registerDeepLinkHandler { params, error in }")
+
+    def test_swift_optional_instance(self):
+        self.flagged("ios", "swift",
+                     'let instance = TenjinSDK.getInstance("<SDK_KEY>")\n'
+                     "instance.registerDeepLinkHandler { params, error in }",
+                     "inferred as `TenjinSDK?`")
 
     def test_swift_class_method_on_instance(self):
         self.flagged("ios", "swift",
-                     'let instance = TenjinSDK.getInstance("<SDK_KEY>")\ninstance.connect()',
-                     "no instance method")
+                     'let instance: TenjinSDK = TenjinSDK.getInstance("<SDK_KEY>")\ninstance.connect()',
+                     "is a class method")
 
     def test_objc_deprecated(self):
         self.flagged("ios", "objectivec", '[TenjinSDK init:@"<SDK_KEY>"];', "deprecated")

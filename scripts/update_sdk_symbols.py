@@ -7,7 +7,8 @@ needs network access or anything that is not public.
 
 Sources (all public):
   android       Maven Central   com.tenjin:android-sdk (.aar, class files)
-  ios           GitHub          tenjin/tenjin-ios-sdk at the newest CocoaPods version (headers)
+  ios           GitHub          tenjin/tenjin-ios-sdk at the newest CocoaPods version (headers),
+                                tenjin/tenjin-ios-spm (framework, for the Swift names)
   flutter       pub.dev         tenjin_plugin (Dart source)
   react-native  npm             react-native-tenjin (type definitions)
   ionic         npm             ionic-capacitor-tenjin (type definitions)
@@ -17,16 +18,21 @@ Usage:
   python3 scripts/update_sdk_symbols.py            # all platforms
   python3 scripts/update_sdk_symbols.py android    # one or more platforms
 
-Standard library only.
+Standard library only. The Swift names of the iOS API are read with Apple's
+swift-symbolgraph-extract, so regenerating ios.json for a new iOS SDK version
+needs macOS with Xcode. Everything else runs anywhere.
 """
 
 import io
 import json
 import os
 import re
+import shutil
 import struct
+import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.request
 import zipfile
 
@@ -324,6 +330,58 @@ def objc_interfaces(header):
     return interfaces
 
 
+SWIFT_TYPES = ("TenjinSDK", "TJNUserProfileData", "TenjinPurchasesManager")
+
+
+def swift_names(version):
+    """Swift spellings of the public API, as the Swift compiler imports the framework.
+
+    Objective-C selectors are renamed on import (optInParams: becomes opt(inParams:)), and the
+    rules are not worth reimplementing, so this asks Apple's tooling. Needs macOS with Xcode.
+    """
+    url = "https://github.com/tenjin/tenjin-ios-spm/archive/refs/tags/%s.zip" % version
+    work = tempfile.mkdtemp(prefix="tenjin-ios-")
+    try:
+        zipfile.ZipFile(io.BytesIO(fetch(url))).extractall(work)
+        framework_dir = None
+        for root, dirs, _files in os.walk(work):
+            if "TenjinSDK.framework" in dirs and "simulator" in os.path.basename(root):
+                framework_dir = root
+                break
+        if framework_dir is None:
+            raise RuntimeError("no simulator slice in the TenjinSDK xcframework")
+        sdk = subprocess.check_output(["xcrun", "--sdk", "iphonesimulator", "--show-sdk-path"], text=True).strip()
+        out = os.path.join(work, "symbolgraph")
+        os.makedirs(out)
+        subprocess.run(
+            ["xcrun", "swift-symbolgraph-extract", "-module-name", "TenjinSDK", "-F", framework_dir,
+             "-sdk", sdk, "-target", "arm64-apple-ios15.0-simulator", "-output-dir", out],
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        with open(os.path.join(out, "TenjinSDK.symbols.json"), encoding="utf-8") as handle:
+            graph = json.load(handle)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+    kinds = {"swift.type.method": "type_methods", "swift.method": "methods",
+             "swift.property": "properties", "swift.type.property": "type_properties"}
+    types = {}
+    for symbol in graph["symbols"]:
+        path = symbol["pathComponents"]
+        group = kinds.get(symbol["kind"]["identifier"])
+        if len(path) != 2 or path[0] not in SWIFT_TYPES or group is None:
+            continue
+        entry = types.setdefault(path[0], {"type_methods": [], "methods": [], "properties": [],
+                                           "type_properties": [], "deprecated": []})
+        entry[group].append(path[1])
+        if any(item.get("isUnconditionallyDeprecated") or item.get("deprecated")
+               for item in symbol.get("availability", [])):
+            entry["deprecated"].append(path[1])
+    for entry in types.values():
+        for key in entry:
+            entry[key] = sorted(set(entry[key]))
+    return {"generated_from": url, "types": dict(sorted(types.items()))}
+
+
 def ios():
     pod = fetch_json("https://trunk.cocoapods.org/api/v1/pods/TenjinSDK")
     version = max((item["name"] for item in pod["versions"]), key=version_key)
@@ -344,15 +402,32 @@ def ios():
                 "selectors": dict(sorted(swift[name]["selectors"].items())),
             }
 
+    if shutil.which("xcrun"):
+        swift_api = swift_names(version)
+    else:
+        # Not on macOS: keep the Swift names already recorded, if they are for this version.
+        existing_path = os.path.join(OUT_DIR, "ios.json")
+        existing = {}
+        if os.path.exists(existing_path):
+            with open(existing_path, encoding="utf-8") as handle:
+                existing = json.load(handle)
+        if existing.get("version") != version or "swift" not in existing:
+            raise SystemExit(
+                "TenjinSDK %s for iOS is newer than sdk-symbols/ios.json (%s). Its Swift names are read "
+                "with swift-symbolgraph-extract: run `python3 scripts/update_sdk_symbols.py ios` on macOS "
+                "with Xcode." % (version, existing.get("version")))
+        swift_api = existing["swift"]
+
     return {
         "platform": "ios",
         "package": "TenjinSDK",
         "version": version,
-        "generated_from": [header_url, swift_header_url, podspec_url],
+        "generated_from": [header_url, swift_header_url, podspec_url, swift_api["generated_from"]],
         "min_ios": re.search(r's\.platform\s*=\s*:ios,\s*"([\d.]+)"', podspec).group(1),
         "module": "TenjinSDK",
         "selectors": dict(sorted(main["TenjinSDK"]["selectors"].items())),
         "types": types,
+        "swift": swift_api,
     }
 
 

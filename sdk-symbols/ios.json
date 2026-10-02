@@ -5,7 +5,8 @@
   "generated_from": [
     "https://raw.githubusercontent.com/tenjin/tenjin-ios-sdk/1.19.1/TenjinSDK.h",
     "https://raw.githubusercontent.com/tenjin/tenjin-ios-sdk/1.19.1/TenjinSDK.xcframework/ios-arm64/TenjinSDK.framework/Headers/TenjinSDK-Swift.h",
-    "https://raw.githubusercontent.com/tenjin/tenjin-ios-sdk/1.19.1/TenjinSDK.podspec"
+    "https://raw.githubusercontent.com/tenjin/tenjin-ios-sdk/1.19.1/TenjinSDK.podspec",
+    "https://github.com/tenjin/tenjin-ios-spm/archive/refs/tags/1.19.1.zip"
   ],
   "min_ios": "12.0",
   "module": "TenjinSDK",
@@ -336,6 +337,160 @@
         "sharedWith:": {
           "kind": "+"
         }
+      }
+    }
+  },
+  "swift": {
+    "generated_from": "https://github.com/tenjin/tenjin-ios-spm/archive/refs/tags/1.19.1.zip",
+    "types": {
+      "TJNUserProfileData": {
+        "type_methods": [],
+        "methods": [
+          "encode(to:)",
+          "getIAPRevenue(forCurrency:)",
+          "getILRDRevenue(forNetwork:)",
+          "toDictionary()",
+          "toScalarDictionary()"
+        ],
+        "properties": [
+          "averageSessionLength",
+          "currentSessionDuration",
+          "currentSessionPausedTime",
+          "currentSessionStartTime",
+          "firstSessionDate",
+          "iapRevenueByCurrency",
+          "iapTransactionCount",
+          "ilrdRevenueByNetwork",
+          "lastBackgroundTime",
+          "lastSessionDate",
+          "lastSessionLength",
+          "purchasedProductIDsArray",
+          "sessionCount",
+          "totalILRDRevenueUSD",
+          "totalSessionTime",
+          "totalSessionTimeIncludingCurrent"
+        ],
+        "type_properties": [],
+        "deprecated": []
+      },
+      "TenjinPurchasesManager": {
+        "type_methods": [
+          "handleSubscription(productId:currencyCode:unitPrice:)",
+          "shared(with:)"
+        ],
+        "methods": [
+          "subscription(_:)",
+          "transaction(_:)"
+        ],
+        "properties": [],
+        "type_properties": [],
+        "deprecated": []
+      },
+      "TenjinSDK": {
+        "type_methods": [
+          "adMobImpression(fromJSON:)",
+          "appLovinImpression(fromJSON:)",
+          "appendAppSubversion(_:)",
+          "casImpression(fromJSON:)",
+          "cloudXImpression(fromJSON:)",
+          "connect()",
+          "connect(withDeferredDeeplink:)",
+          "customImpression(fromJSON:)",
+          "debugLogs()",
+          "getAnalyticsInstallationId()",
+          "getCustomerUserId()",
+          "getInstance(_:)",
+          "getInstance(_:andAppSubversion:)",
+          "getInstance(_:andSharedSecret:)",
+          "getInstance(_:andSharedSecret:andAppSubversion:)",
+          "getUserProfile()",
+          "getUserProfileAsDictionary()",
+          "handleAdMobILRD(_:_:)",
+          "handleCASILRD(_:)",
+          "handleCloudXILRD(_:)",
+          "handleOpenURL(_:)",
+          "handleOpenURLString(_:)",
+          "handleTradPlusILRD(_:)",
+          "hyperBidImpression(fromDict:)",
+          "hyperBidImpression(fromJSON:)",
+          "init(_:)",
+          "init(_:andAppSubversion:)",
+          "init(_:andSharedSecret:)",
+          "init(_:andSharedSecret:andAppSubversion:)",
+          "initialize(_:)",
+          "initialize(_:andAppSubversion:)",
+          "initialize(_:andSharedSecret:)",
+          "initialize(_:andSharedSecret:andAppSubversion:)",
+          "ironSourceImpression(fromJSON:)",
+          "opt(inParams:)",
+          "optIn()",
+          "optInGoogleDMA()",
+          "optInOutUsingCMP()",
+          "optOut()",
+          "optOutGoogleDMA()",
+          "optOutParams(_:)",
+          "purchasesManager()",
+          "registerAppForAdNetworkAttribution()",
+          "requestTrackingAuthorization()",
+          "requestTrackingAuthorization(completionHandler:)",
+          "resetUserProfile()",
+          "sdkVersion()",
+          "sendEvent(withName:)",
+          "sendEvent(withName:andEventValue:)",
+          "sendEvent(withName:andValue:)",
+          "setCacheEventSetting(_:)",
+          "setCustomerUserId(_:)",
+          "setEncryptRequestsSetting(_:)",
+          "setLogHandler(_:)",
+          "setPluginVersion(_:version:)",
+          "setValue(_:forKey:)",
+          "setWrapperVersion(_:)",
+          "sharedInstance()",
+          "sharedInstance(withToken:)",
+          "sharedInstance(withToken:andDeferredDeeplink:)",
+          "subscribeAppLovinImpressions()",
+          "subscribeCASBannerImpressions()",
+          "subscribeIronSourceImpressions()",
+          "subscribeTradPlusImpressions()",
+          "subscription(withProductName:andCurrencyCode:andUnitPrice:andTransactionId:andOriginalTransactionId:andBase64Receipt:andSKTransaction:)",
+          "subscriptionWithStoreKit(forProductId:andCurrencyCode:andUnitPrice:)",
+          "topOnImpression(fromDict:)",
+          "topOnImpression(fromJSON:)",
+          "tradPlusImpression(fromJSON:)",
+          "transaction(_:)",
+          "transaction(_:andReceipt:)",
+          "transaction(withProductName:andCurrencyCode:andQuantity:andUnitPrice:)",
+          "transaction(withProductName:andCurrencyCode:andQuantity:andUnitPrice:andTransactionId:andBase64Receipt:)",
+          "transaction(withProductName:andCurrencyCode:andQuantity:andUnitPrice:andTransactionId:andReceipt:)",
+          "updateConversionValue(_:)",
+          "updatePostbackConversionValue(_:)",
+          "updatePostbackConversionValue(_:coarseValue:)",
+          "updatePostbackConversionValue(_:coarseValue:lockWindow:)",
+          "updateSkAdNetworkConversionValue(_:)",
+          "verboseLogs()"
+        ],
+        "methods": [
+          "attributionInfo()",
+          "getAttributionInfo(_:)",
+          "handleSubscriptionPurchase(_:)",
+          "registerDeepLinkHandler(_:)",
+          "setGoogleDMAParametersWithAdPersonalization(_:adUserData:)"
+        ],
+        "properties": [],
+        "type_properties": [],
+        "deprecated": [
+          "init(_:)",
+          "init(_:andAppSubversion:)",
+          "init(_:andSharedSecret:)",
+          "init(_:andSharedSecret:andAppSubversion:)",
+          "registerAppForAdNetworkAttribution()",
+          "sendEvent(withName:andEventValue:)",
+          "sharedInstance(withToken:)",
+          "sharedInstance(withToken:andDeferredDeeplink:)",
+          "transaction(_:)",
+          "updateConversionValue(_:)",
+          "updateSkAdNetworkConversionValue(_:)"
+        ]
       }
     }
   }

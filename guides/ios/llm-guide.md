@@ -381,7 +381,7 @@ import StoreKit
 import TenjinSDK
 
 @available(iOS 15.0, *)
-func handlePurchase(_ result: VerificationResult<Transaction>, product: Product) async {
+func handlePurchase(_ result: VerificationResult<StoreKit.Transaction>, product: Product) async {
     switch result {
     case .verified(let transaction):
         TenjinSDK.transaction(
@@ -429,9 +429,9 @@ TenjinSDK.subscription(withProductName: "com.example.monthly",
 // Or let the SDK fetch the StoreKit 2 transaction itself (iOS 16+).
 // Recommended for IAP libraries that don't expose StoreKit 2 data (e.g. RevenueCat).
 if #available(iOS 16.0, *) {
-    TenjinSDK.subscription(withStoreKitForProductId: "com.example.monthly",
-                           andCurrencyCode: "USD",
-                           andUnitPrice: NSDecimalNumber(string: "9.99"))
+    TenjinSDK.subscriptionWithStoreKit(forProductId: "com.example.monthly",
+                                       andCurrencyCode: "USD",
+                                       andUnitPrice: NSDecimalNumber(string: "9.99"))
 }
 ```
 
@@ -582,7 +582,7 @@ if (thirdPartyDeepLink) {
 To register a deep link handler:
 
 ```swift
-let instance = TenjinSDK.getInstance("<SDK_KEY>")
+let instance: TenjinSDK = TenjinSDK.getInstance("<SDK_KEY>")
 instance.registerDeepLinkHandler { params, error in
     if let error = error {
         print("Deep link error: \(error)")
@@ -624,6 +624,8 @@ In a `UISceneDelegate` app, call it from `scene(_:openURLContexts:)`, `scene(_:c
 ## 10. Impression Level Ad Revenue (ILRD)
 
 > **Note:** ILRD is a paid feature. Contact your Tenjin account manager before implementing.
+
+The ILRD methods are visible from Swift (`import TenjinSDK`) with SDK 1.19.1 or newer. They can always be called from Objective-C.
 
 ### AppLovin
 
@@ -807,6 +809,8 @@ When integrating Tenjin into an iOS project, verify these items:
 | Sending events before `connect()` | Events will not be processed | Always call `connect()` first |
 | Using deprecated `init:` methods | Will be removed in a future version | Use `initialize:` (ObjC) or `getInstance()` (Swift) |
 | Reading `jwsRepresentation` from the `Transaction` | It does not exist there and does not compile | Read it from the `VerificationResult` |
+| `let instance = TenjinSDK.getInstance(...)` then `instance.registerDeepLinkHandler` | The inferred type is `TenjinSDK?`, so the call does not compile | Annotate the type: `let instance: TenjinSDK = ...` |
+| `TenjinSDK.subscription(withStoreKitForProductId:...)` | That is not the Swift name of the method | `TenjinSDK.subscriptionWithStoreKit(forProductId:andCurrencyCode:andUnitPrice:)` |
 | Event names over 80 characters | Will be rejected | Keep event names concise |
 | Exceeding 500 unique event names | Additional events will be dropped | Reuse event names with different values |
 | Dividing AdMob `value_micros` by 1,000,000 before sending | iOS expects currency units, which `GADAdValue.value` already returns; dividing reports 1,000,000x too little | Send `GADAdValue.value` as-is, or use `handleAdMobILRD:` |
