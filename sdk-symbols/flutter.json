@@ -1,0 +1,251 @@
+{
+  "platform": "flutter",
+  "package": "tenjin_plugin",
+  "version": "1.5.0",
+  "generated_from": [
+    "https://pub.dev/api/archives/tenjin_plugin-1.5.0.tar.gz"
+  ],
+  "lib_files": [
+    "tenjin_sdk.dart",
+    "util/version_helper.dart"
+  ],
+  "min_ios": "12.0",
+  "min_sdk": 21,
+  "class": "TenjinSDK",
+  "static_members": [
+    "instance"
+  ],
+  "methods": {
+    "appendAppSubversion": {
+      "positional": 1,
+      "named": {}
+    },
+    "connect": {
+      "positional": 0,
+      "named": {}
+    },
+    "eventAdImpressionAdMob": {
+      "positional": 1,
+      "named": {}
+    },
+    "eventAdImpressionAppLovin": {
+      "positional": 1,
+      "named": {}
+    },
+    "eventAdImpressionHyperBid": {
+      "positional": 1,
+      "named": {}
+    },
+    "eventAdImpressionIronSource": {
+      "positional": 1,
+      "named": {}
+    },
+    "eventAdImpressionTopOn": {
+      "positional": 1,
+      "named": {}
+    },
+    "eventAdImpressionTradPlus": {
+      "positional": 1,
+      "named": {}
+    },
+    "eventAdImpressionTradPlusAdInfo": {
+      "positional": 1,
+      "named": {}
+    },
+    "eventWithName": {
+      "positional": 1,
+      "named": {}
+    },
+    "eventWithNameAndValue": {
+      "positional": 2,
+      "named": {}
+    },
+    "getAnalyticsInstallationId": {
+      "positional": 0,
+      "named": {}
+    },
+    "getAttributionInfo": {
+      "positional": 0,
+      "named": {}
+    },
+    "getCustomerUserId": {
+      "positional": 0,
+      "named": {}
+    },
+    "getUserProfileDictionary": {
+      "positional": 0,
+      "named": {}
+    },
+    "handleOpenUrl": {
+      "positional": 1,
+      "named": {}
+    },
+    "init": {
+      "positional": 0,
+      "named": {
+        "apiKey": {
+          "required": true
+        }
+      },
+      "deprecated": true
+    },
+    "initialize": {
+      "positional": 0,
+      "named": {
+        "sdkKey": {
+          "required": true
+        }
+      }
+    },
+    "optIn": {
+      "positional": 0,
+      "named": {}
+    },
+    "optInGoogleDMA": {
+      "positional": 0,
+      "named": {}
+    },
+    "optInOutUsingCMP": {
+      "positional": 0,
+      "named": {}
+    },
+    "optInParams": {
+      "positional": 1,
+      "named": {}
+    },
+    "optOut": {
+      "positional": 0,
+      "named": {}
+    },
+    "optOutGoogleDMA": {
+      "positional": 0,
+      "named": {}
+    },
+    "optOutParams": {
+      "positional": 1,
+      "named": {}
+    },
+    "registerAppForAdNetworkAttribution": {
+      "positional": 0,
+      "named": {}
+    },
+    "requestTrackingAuthorization": {
+      "positional": 0,
+      "named": {}
+    },
+    "resetUserProfile": {
+      "positional": 0,
+      "named": {}
+    },
+    "setCacheEventSetting": {
+      "positional": 1,
+      "named": {}
+    },
+    "setCustomerUserId": {
+      "positional": 1,
+      "named": {}
+    },
+    "setEncryptRequestsSetting": {
+      "positional": 1,
+      "named": {}
+    },
+    "setGoogleDMAParameters": {
+      "positional": 2,
+      "named": {}
+    },
+    "subscription": {
+      "positional": 0,
+      "named": {
+        "productId": {
+          "required": true
+        },
+        "currencyCode": {
+          "required": true
+        },
+        "unitPrice": {
+          "required": true
+        },
+        "iosTransactionId": {
+          "required": false
+        },
+        "iosOriginalTransactionId": {
+          "required": false
+        },
+        "iosReceipt": {
+          "required": false
+        },
+        "iosSKTransaction": {
+          "required": false
+        },
+        "androidPurchaseToken": {
+          "required": false
+        },
+        "androidPurchaseData": {
+          "required": false
+        },
+        "androidDataSignature": {
+          "required": false
+        }
+      }
+    },
+    "subscriptionWithStoreKit": {
+      "positional": 0,
+      "named": {
+        "productId": {
+          "required": true
+        },
+        "currencyCode": {
+          "required": true
+        },
+        "unitPrice": {
+          "required": true
+        }
+      }
+    },
+    "transaction": {
+      "positional": 4,
+      "named": {}
+    },
+    "transactionWithReceipt": {
+      "positional": 0,
+      "named": {
+        "productId": {
+          "required": true
+        },
+        "currencyCode": {
+          "required": true
+        },
+        "unitPrice": {
+          "required": true
+        },
+        "quantity": {
+          "required": true
+        },
+        "androidPurchaseData": {
+          "required": false
+        },
+        "androidDataSignature": {
+          "required": false
+        },
+        "iosReceipt": {
+          "required": false
+        },
+        "iosTransactionId": {
+          "required": false
+        }
+      }
+    },
+    "updatePostbackConversionValue": {
+      "positional": 1,
+      "named": {}
+    },
+    "updatePostbackConversionValueCoarseValue": {
+      "positional": 2,
+      "named": {}
+    },
+    "updatePostbackConversionValueCoarseValueLockWindow": {
+      "positional": 3,
+      "named": {}
+    }
+  }
+}

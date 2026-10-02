@@ -1,0 +1,497 @@
+{
+  "platform": "ios",
+  "package": "TenjinSDK",
+  "version": "1.19.1",
+  "generated_from": [
+    "https://raw.githubusercontent.com/tenjin/tenjin-ios-sdk/1.19.1/TenjinSDK.h",
+    "https://raw.githubusercontent.com/tenjin/tenjin-ios-sdk/1.19.1/TenjinSDK.xcframework/ios-arm64/TenjinSDK.framework/Headers/TenjinSDK-Swift.h",
+    "https://raw.githubusercontent.com/tenjin/tenjin-ios-sdk/1.19.1/TenjinSDK.podspec",
+    "https://github.com/tenjin/tenjin-ios-spm/archive/refs/tags/1.19.1.zip"
+  ],
+  "min_ios": "12.0",
+  "module": "TenjinSDK",
+  "selectors": {
+    "adMobImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "appLovinImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "appendAppSubversion:": {
+      "kind": "+"
+    },
+    "casImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "cloudXImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "connect": {
+      "kind": "+"
+    },
+    "connectWithDeferredDeeplink:": {
+      "kind": "+"
+    },
+    "customImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "debugLogs": {
+      "kind": "+"
+    },
+    "getAnalyticsInstallationId": {
+      "kind": "+"
+    },
+    "getAttributionInfo:": {
+      "kind": "-"
+    },
+    "getCustomerUserId": {
+      "kind": "+"
+    },
+    "getInstance:": {
+      "kind": "+"
+    },
+    "getInstance:andAppSubversion:": {
+      "kind": "+"
+    },
+    "getInstance:andSharedSecret:": {
+      "kind": "+"
+    },
+    "getInstance:andSharedSecret:andAppSubversion:": {
+      "kind": "+"
+    },
+    "getUserProfile": {
+      "kind": "+"
+    },
+    "getUserProfileAsDictionary": {
+      "kind": "+"
+    },
+    "handleAdMobILRD::": {
+      "kind": "+"
+    },
+    "handleCASILRD:": {
+      "kind": "+"
+    },
+    "handleCloudXILRD:": {
+      "kind": "+"
+    },
+    "handleOpenURL:": {
+      "kind": "+",
+      "swift_name": "handleOpenURL(_:)"
+    },
+    "handleOpenURLString:": {
+      "kind": "+",
+      "swift_name": "handleOpenURLString(_:)"
+    },
+    "handleSubscriptionPurchase:": {
+      "kind": "-"
+    },
+    "handleTradPlusILRD:": {
+      "kind": "+"
+    },
+    "hyperBidImpressionFromDict:": {
+      "kind": "+"
+    },
+    "hyperBidImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "init": {
+      "kind": "-",
+      "deprecated": true
+    },
+    "init:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "init:andAppSubversion:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "init:andSharedSecret:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "init:andSharedSecret:andAppSubversion:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "initWithToken:andSharedSecret:andAppSubversion:andDeferredDeeplink:ping:": {
+      "kind": "-"
+    },
+    "initialize:": {
+      "kind": "+"
+    },
+    "initialize:andAppSubversion:": {
+      "kind": "+"
+    },
+    "initialize:andSharedSecret:": {
+      "kind": "+"
+    },
+    "initialize:andSharedSecret:andAppSubversion:": {
+      "kind": "+"
+    },
+    "ironSourceImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "optIn": {
+      "kind": "+"
+    },
+    "optInGoogleDMA": {
+      "kind": "+"
+    },
+    "optInOutUsingCMP": {
+      "kind": "+"
+    },
+    "optInParams:": {
+      "kind": "+"
+    },
+    "optOut": {
+      "kind": "+"
+    },
+    "optOutGoogleDMA": {
+      "kind": "+"
+    },
+    "optOutParams:": {
+      "kind": "+"
+    },
+    "purchasesManager": {
+      "kind": "+"
+    },
+    "registerAppForAdNetworkAttribution": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "registerDeepLinkHandler:": {
+      "kind": "-"
+    },
+    "requestTrackingAuthorizationWithCompletionHandler:": {
+      "kind": "+"
+    },
+    "resetUserProfile": {
+      "kind": "+"
+    },
+    "sdkVersion": {
+      "kind": "+"
+    },
+    "sendEventWithName:": {
+      "kind": "+"
+    },
+    "sendEventWithName:andEventValue:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "sendEventWithName:andValue:": {
+      "kind": "+"
+    },
+    "setCacheEventSetting:": {
+      "kind": "+"
+    },
+    "setCustomerUserId:": {
+      "kind": "+"
+    },
+    "setEncryptRequestsSetting:": {
+      "kind": "+"
+    },
+    "setGoogleDMAParametersWithAdPersonalization:adUserData:": {
+      "kind": "-"
+    },
+    "setLogHandler:": {
+      "kind": "+"
+    },
+    "setPluginVersion:version:": {
+      "kind": "+"
+    },
+    "setValue:forKey:": {
+      "kind": "+"
+    },
+    "setWrapperVersion:": {
+      "kind": "+"
+    },
+    "sharedInstance": {
+      "kind": "+"
+    },
+    "sharedInstanceWithToken:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "sharedInstanceWithToken:andDeferredDeeplink:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "subscribeAppLovinImpressions": {
+      "kind": "+"
+    },
+    "subscribeCASBannerImpressions": {
+      "kind": "+"
+    },
+    "subscribeIronSourceImpressions": {
+      "kind": "+"
+    },
+    "subscribeTradPlusImpressions": {
+      "kind": "+"
+    },
+    "subscriptionWithProductName:andCurrencyCode:andUnitPrice:andTransactionId:andOriginalTransactionId:andBase64Receipt:andSKTransaction:": {
+      "kind": "+"
+    },
+    "subscriptionWithStoreKitForProductId:andCurrencyCode:andUnitPrice:": {
+      "kind": "+",
+      "ios": "16.0"
+    },
+    "topOnImpressionFromDict:": {
+      "kind": "+"
+    },
+    "topOnImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "tradPlusImpressionFromJSON:": {
+      "kind": "+"
+    },
+    "transaction:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "transaction:andReceipt:": {
+      "kind": "+"
+    },
+    "transactionWithProductName:andCurrencyCode:andQuantity:andUnitPrice:": {
+      "kind": "+"
+    },
+    "transactionWithProductName:andCurrencyCode:andQuantity:andUnitPrice:andTransactionId:andBase64Receipt:": {
+      "kind": "+"
+    },
+    "transactionWithProductName:andCurrencyCode:andQuantity:andUnitPrice:andTransactionId:andReceipt:": {
+      "kind": "+"
+    },
+    "updateConversionValue:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "updatePostbackConversionValue:": {
+      "kind": "+"
+    },
+    "updatePostbackConversionValue:coarseValue:": {
+      "kind": "+"
+    },
+    "updatePostbackConversionValue:coarseValue:lockWindow:": {
+      "kind": "+"
+    },
+    "updateSkAdNetworkConversionValue:": {
+      "kind": "+",
+      "deprecated": true
+    },
+    "verboseLogs": {
+      "kind": "+"
+    }
+  },
+  "types": {
+    "TJNUserProfileData": {
+      "properties": [
+        "averageSessionLength",
+        "currentSessionDuration",
+        "currentSessionPausedTime",
+        "currentSessionStartTime",
+        "firstSessionDate",
+        "iapRevenueByCurrency",
+        "iapTransactionCount",
+        "ilrdRevenueByNetwork",
+        "lastBackgroundTime",
+        "lastSessionDate",
+        "lastSessionLength",
+        "purchasedProductIDsArray",
+        "sessionCount",
+        "totalILRDRevenueUSD",
+        "totalSessionTime",
+        "totalSessionTimeIncludingCurrent"
+      ],
+      "selectors": {
+        "getIAPRevenueForCurrency:": {
+          "kind": "-"
+        },
+        "getILRDRevenueForNetwork:": {
+          "kind": "-"
+        },
+        "init": {
+          "kind": "-"
+        },
+        "toDictionary": {
+          "kind": "-"
+        },
+        "toScalarDictionary": {
+          "kind": "-"
+        }
+      }
+    },
+    "TenjinPurchasesManager": {
+      "properties": [],
+      "selectors": {
+        "handleSubscriptionWithProductId:currencyCode:unitPrice:": {
+          "kind": "+"
+        },
+        "init": {
+          "kind": "-",
+          "deprecated": true
+        },
+        "new": {
+          "kind": "+",
+          "deprecated": true
+        },
+        "sharedWith:": {
+          "kind": "+"
+        }
+      }
+    }
+  },
+  "swift": {
+    "generated_from": "https://github.com/tenjin/tenjin-ios-spm/archive/refs/tags/1.19.1.zip",
+    "types": {
+      "TJNUserProfileData": {
+        "type_methods": [],
+        "methods": [
+          "encode(to:)",
+          "getIAPRevenue(forCurrency:)",
+          "getILRDRevenue(forNetwork:)",
+          "toDictionary()",
+          "toScalarDictionary()"
+        ],
+        "properties": [
+          "averageSessionLength",
+          "currentSessionDuration",
+          "currentSessionPausedTime",
+          "currentSessionStartTime",
+          "firstSessionDate",
+          "iapRevenueByCurrency",
+          "iapTransactionCount",
+          "ilrdRevenueByNetwork",
+          "lastBackgroundTime",
+          "lastSessionDate",
+          "lastSessionLength",
+          "purchasedProductIDsArray",
+          "sessionCount",
+          "totalILRDRevenueUSD",
+          "totalSessionTime",
+          "totalSessionTimeIncludingCurrent"
+        ],
+        "type_properties": [],
+        "deprecated": []
+      },
+      "TenjinPurchasesManager": {
+        "type_methods": [
+          "handleSubscription(productId:currencyCode:unitPrice:)",
+          "shared(with:)"
+        ],
+        "methods": [
+          "subscription(_:)",
+          "transaction(_:)"
+        ],
+        "properties": [],
+        "type_properties": [],
+        "deprecated": []
+      },
+      "TenjinSDK": {
+        "type_methods": [
+          "adMobImpression(fromJSON:)",
+          "appLovinImpression(fromJSON:)",
+          "appendAppSubversion(_:)",
+          "casImpression(fromJSON:)",
+          "cloudXImpression(fromJSON:)",
+          "connect()",
+          "connect(withDeferredDeeplink:)",
+          "customImpression(fromJSON:)",
+          "debugLogs()",
+          "getAnalyticsInstallationId()",
+          "getCustomerUserId()",
+          "getInstance(_:)",
+          "getInstance(_:andAppSubversion:)",
+          "getInstance(_:andSharedSecret:)",
+          "getInstance(_:andSharedSecret:andAppSubversion:)",
+          "getUserProfile()",
+          "getUserProfileAsDictionary()",
+          "handleAdMobILRD(_:_:)",
+          "handleCASILRD(_:)",
+          "handleCloudXILRD(_:)",
+          "handleOpenURL(_:)",
+          "handleOpenURLString(_:)",
+          "handleTradPlusILRD(_:)",
+          "hyperBidImpression(fromDict:)",
+          "hyperBidImpression(fromJSON:)",
+          "init(_:)",
+          "init(_:andAppSubversion:)",
+          "init(_:andSharedSecret:)",
+          "init(_:andSharedSecret:andAppSubversion:)",
+          "initialize(_:)",
+          "initialize(_:andAppSubversion:)",
+          "initialize(_:andSharedSecret:)",
+          "initialize(_:andSharedSecret:andAppSubversion:)",
+          "ironSourceImpression(fromJSON:)",
+          "opt(inParams:)",
+          "optIn()",
+          "optInGoogleDMA()",
+          "optInOutUsingCMP()",
+          "optOut()",
+          "optOutGoogleDMA()",
+          "optOutParams(_:)",
+          "purchasesManager()",
+          "registerAppForAdNetworkAttribution()",
+          "requestTrackingAuthorization()",
+          "requestTrackingAuthorization(completionHandler:)",
+          "resetUserProfile()",
+          "sdkVersion()",
+          "sendEvent(withName:)",
+          "sendEvent(withName:andEventValue:)",
+          "sendEvent(withName:andValue:)",
+          "setCacheEventSetting(_:)",
+          "setCustomerUserId(_:)",
+          "setEncryptRequestsSetting(_:)",
+          "setLogHandler(_:)",
+          "setPluginVersion(_:version:)",
+          "setValue(_:forKey:)",
+          "setWrapperVersion(_:)",
+          "sharedInstance()",
+          "sharedInstance(withToken:)",
+          "sharedInstance(withToken:andDeferredDeeplink:)",
+          "subscribeAppLovinImpressions()",
+          "subscribeCASBannerImpressions()",
+          "subscribeIronSourceImpressions()",
+          "subscribeTradPlusImpressions()",
+          "subscription(withProductName:andCurrencyCode:andUnitPrice:andTransactionId:andOriginalTransactionId:andBase64Receipt:andSKTransaction:)",
+          "subscriptionWithStoreKit(forProductId:andCurrencyCode:andUnitPrice:)",
+          "topOnImpression(fromDict:)",
+          "topOnImpression(fromJSON:)",
+          "tradPlusImpression(fromJSON:)",
+          "transaction(_:)",
+          "transaction(_:andReceipt:)",
+          "transaction(withProductName:andCurrencyCode:andQuantity:andUnitPrice:)",
+          "transaction(withProductName:andCurrencyCode:andQuantity:andUnitPrice:andTransactionId:andBase64Receipt:)",
+          "transaction(withProductName:andCurrencyCode:andQuantity:andUnitPrice:andTransactionId:andReceipt:)",
+          "updateConversionValue(_:)",
+          "updatePostbackConversionValue(_:)",
+          "updatePostbackConversionValue(_:coarseValue:)",
+          "updatePostbackConversionValue(_:coarseValue:lockWindow:)",
+          "updateSkAdNetworkConversionValue(_:)",
+          "verboseLogs()"
+        ],
+        "methods": [
+          "attributionInfo()",
+          "getAttributionInfo(_:)",
+          "handleSubscriptionPurchase(_:)",
+          "registerDeepLinkHandler(_:)",
+          "setGoogleDMAParametersWithAdPersonalization(_:adUserData:)"
+        ],
+        "properties": [],
+        "type_properties": [],
+        "deprecated": [
+          "init(_:)",
+          "init(_:andAppSubversion:)",
+          "init(_:andSharedSecret:)",
+          "init(_:andSharedSecret:andAppSubversion:)",
+          "registerAppForAdNetworkAttribution()",
+          "sendEvent(withName:andEventValue:)",
+          "sharedInstance(withToken:)",
+          "sharedInstance(withToken:andDeferredDeeplink:)",
+          "transaction(_:)",
+          "updateConversionValue(_:)",
+          "updateSkAdNetworkConversionValue(_:)"
+        ]
+      }
+    }
+  }
+}
