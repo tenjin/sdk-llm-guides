@@ -1,0 +1,230 @@
+{
+  "platform": "ionic",
+  "package": "ionic-capacitor-tenjin",
+  "version": "2.2.0",
+  "generated_from": [
+    "https://registry.npmjs.org/ionic-capacitor-tenjin/-/ionic-capacitor-tenjin-2.2.0.tgz"
+  ],
+  "min_ios": "14.0",
+  "min_sdk": 22,
+  "named_exports": [
+    "Tenjin"
+  ],
+  "default_export": false,
+  "peer_dependencies": {
+    "@capacitor/core": ">=6.0.0"
+  },
+  "methods": {
+    "appendAppSubversion": {
+      "options": {
+        "version": {
+          "required": true
+        }
+      }
+    },
+    "connect": {
+      "options": null
+    },
+    "eventAdImpressionAdMob": {
+      "options": {
+        "json": {
+          "required": true
+        }
+      }
+    },
+    "eventAdImpressionAppLovin": {
+      "options": {
+        "json": {
+          "required": true
+        }
+      }
+    },
+    "eventAdImpressionCAS": {
+      "options": {
+        "json": {
+          "required": true
+        }
+      }
+    },
+    "eventAdImpressionHyperBid": {
+      "options": {
+        "json": {
+          "required": true
+        }
+      }
+    },
+    "eventAdImpressionIronSource": {
+      "options": {
+        "json": {
+          "required": true
+        }
+      }
+    },
+    "eventAdImpressionTopOn": {
+      "options": {
+        "json": {
+          "required": true
+        }
+      }
+    },
+    "eventAdImpressionTradPlus": {
+      "options": {
+        "json": {
+          "required": true
+        }
+      }
+    },
+    "eventWithName": {
+      "options": {
+        "name": {
+          "required": true
+        }
+      }
+    },
+    "eventWithNameAndValue": {
+      "options": {
+        "name": {
+          "required": true
+        },
+        "value": {
+          "required": true
+        }
+      }
+    },
+    "getAnalyticsInstallationId": {
+      "options": null
+    },
+    "getAttributionInfo": {
+      "options": null
+    },
+    "getCustomerUserId": {
+      "options": null
+    },
+    "getUserProfileDictionary": {
+      "options": null
+    },
+    "handleOpenUrl": {
+      "options": {
+        "url": {
+          "required": true
+        }
+      }
+    },
+    "initialize": {
+      "options": {
+        "sdkKey": {
+          "required": true
+        }
+      }
+    },
+    "optIn": {
+      "options": null
+    },
+    "optInGoogleDMA": {
+      "options": null
+    },
+    "optInOutUsingCMP": {
+      "options": null
+    },
+    "optInParams": {
+      "options": {
+        "params": {
+          "required": true
+        }
+      }
+    },
+    "optOut": {
+      "options": null
+    },
+    "optOutGoogleDMA": {
+      "options": null
+    },
+    "optOutParams": {
+      "options": {
+        "params": {
+          "required": true
+        }
+      }
+    },
+    "resetUserProfile": {
+      "options": null
+    },
+    "setCacheEventSetting": {
+      "options": {
+        "setting": {
+          "required": true
+        }
+      }
+    },
+    "setCustomerUserId": {
+      "options": {
+        "userId": {
+          "required": true
+        }
+      }
+    },
+    "setEncryptRequestsSetting": {
+      "options": {
+        "setting": {
+          "required": true
+        }
+      }
+    },
+    "setGoogleDMAParameters": {
+      "options": {
+        "adPersonalization": {
+          "required": true
+        },
+        "adUserData": {
+          "required": true
+        }
+      }
+    },
+    "transaction": {
+      "options": {
+        "productName": {
+          "required": true
+        },
+        "currencyCode": {
+          "required": true
+        },
+        "quantity": {
+          "required": true
+        },
+        "unitPrice": {
+          "required": true
+        }
+      }
+    },
+    "updatePostbackConversionValue": {
+      "options": {
+        "conversionValue": {
+          "required": true
+        }
+      }
+    },
+    "updatePostbackConversionValueCoarseValue": {
+      "options": {
+        "conversionValue": {
+          "required": true
+        },
+        "coarseValue": {
+          "required": true
+        }
+      }
+    },
+    "updatePostbackConversionValueCoarseValueLockWindow": {
+      "options": {
+        "conversionValue": {
+          "required": true
+        },
+        "coarseValue": {
+          "required": true
+        },
+        "lockWindow": {
+          "required": true
+        }
+      }
+    }
+  }
+}

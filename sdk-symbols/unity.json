@@ -1,0 +1,267 @@
+{
+  "platform": "unity",
+  "package": "com.tenjin.sdk",
+  "version": "1.22.1",
+  "generated_from": [
+    "https://raw.githubusercontent.com/tenjin/tenjin-unity-sdk/1.22.1/package.json",
+    "https://raw.githubusercontent.com/tenjin/tenjin-unity-sdk/1.22.1/Runtime/BaseTenjin.cs",
+    "https://raw.githubusercontent.com/tenjin/tenjin-unity-sdk/1.22.1/Runtime/Tenjin.cs",
+    "https://raw.githubusercontent.com/tenjin/tenjin-unity-sdk/1.22.1/Runtime/AppStoreType.cs",
+    "https://raw.githubusercontent.com/tenjin/tenjin-unity-sdk/1.22.1/Runtime/TenjinObject.cs"
+  ],
+  "min_unity": "2020.3",
+  "BaseTenjin": {
+    "methods": {
+      "AdMobImpressionFromJSON": [
+        1
+      ],
+      "AppLovinImpressionFromJSON": [
+        1
+      ],
+      "AppendAppSubversion": [
+        1
+      ],
+      "CASImpressionFromJSON": [
+        1
+      ],
+      "CloudXImpressionFromJSON": [
+        1
+      ],
+      "Connect": [
+        0,
+        1
+      ],
+      "CustomImpressionFromJSON": [
+        1
+      ],
+      "DebugLogs": [
+        0
+      ],
+      "GetAnalyticsInstallationId": [
+        0
+      ],
+      "GetAttributionInfo": [
+        1
+      ],
+      "GetCustomerUserId": [
+        0
+      ],
+      "GetDeeplink": [
+        1
+      ],
+      "GetUserProfileDictionary": [
+        0
+      ],
+      "HandleOpenUrl": [
+        1
+      ],
+      "HyperBidImpressionFromJSON": [
+        1
+      ],
+      "Init": [
+        1
+      ],
+      "InitWithAppSubversion": [
+        2
+      ],
+      "InitWithSharedSecret": [
+        2
+      ],
+      "InitWithSharedSecretAppSubversion": [
+        3
+      ],
+      "IronSourceImpressionFromJSON": [
+        1
+      ],
+      "OptIn": [
+        0
+      ],
+      "OptInGoogleDMA": [
+        0
+      ],
+      "OptInOutUsingCMP": [
+        0
+      ],
+      "OptInParams": [
+        1
+      ],
+      "OptOut": [
+        0
+      ],
+      "OptOutGoogleDMA": [
+        0
+      ],
+      "OptOutParams": [
+        1
+      ],
+      "RegisterAppForAdNetworkAttribution": [
+        0
+      ],
+      "RequestTrackingAuthorizationWithCompletionHandler": [
+        1
+      ],
+      "ResetUserProfile": [
+        0
+      ],
+      "SendEvent": [
+        1,
+        2
+      ],
+      "SetAppStoreType": [
+        1
+      ],
+      "SetCacheEventSetting": [
+        1
+      ],
+      "SetCustomerUserId": [
+        1
+      ],
+      "SetEncryptRequestsSetting": [
+        1
+      ],
+      "SetGoogleDMAParameters": [
+        2
+      ],
+      "SetSessionTime": [
+        1
+      ],
+      "SubscribeAdMobBannerViewImpressions": [
+        2
+      ],
+      "SubscribeAdMobInterstitialAdImpressions": [
+        2
+      ],
+      "SubscribeAdMobRewardedAdImpressions": [
+        2
+      ],
+      "SubscribeAdMobRewardedInterstitialAdImpressions": [
+        2
+      ],
+      "SubscribeAppLovinImpressions": [
+        0
+      ],
+      "SubscribeCASBannerImpressions": [
+        1
+      ],
+      "SubscribeCASImpressions": [
+        1
+      ],
+      "SubscribeCloudXImpressions": [
+        0
+      ],
+      "SubscribeHyperBidImpressions": [
+        0
+      ],
+      "SubscribeIronSourceImpressions": [
+        0
+      ],
+      "SubscribeLevelPlayBannerAdImpressions": [
+        1
+      ],
+      "SubscribeLevelPlayInterstitialAdImpressions": [
+        1
+      ],
+      "SubscribeLevelPlayRewardedAdImpressions": [
+        1
+      ],
+      "SubscribeTopOnImpressions": [
+        0
+      ],
+      "SubscribeTradPlusImpressions": [
+        0
+      ],
+      "Subscription": [
+        10
+      ],
+      "SubscriptionWithStoreKit": [
+        3
+      ],
+      "TopOnImpressionFromJSON": [
+        1
+      ],
+      "TradPlusImpressionFromAdInfo": [
+        1
+      ],
+      "TradPlusImpressionFromJSON": [
+        1
+      ],
+      "Transaction": [
+        7
+      ],
+      "TransactionAmazon": [
+        6
+      ],
+      "UpdateConversionValue": [
+        1
+      ],
+      "UpdatePostbackConversionValue": [
+        1,
+        2,
+        3
+      ]
+    },
+    "properties": [
+      "ApiKey",
+      "AppSubversion",
+      "SdkVersion",
+      "SharedSecret"
+    ]
+  },
+  "Tenjin": {
+    "static_methods": {
+      "getInstance": [
+        1
+      ],
+      "getInstanceWithAppSubversion": [
+        2
+      ],
+      "getInstanceWithSharedSecret": [
+        2
+      ],
+      "getInstanceWithSharedSecretAppSubversion": [
+        3
+      ]
+    },
+    "nested_types": [
+      "AttributionInfoDelegate",
+      "DeferredDeeplinkDelegate"
+    ],
+    "static_fields": [
+      "authorizationStatusDelegate"
+    ]
+  },
+  "AppStoreType": [
+    "amazon",
+    "googleplay",
+    "other",
+    "unspecified"
+  ],
+  "TenjinObject": {
+    "fields": [
+      "adPersonalization",
+      "adUserData",
+      "androidAppStoreType",
+      "appSubversion",
+      "cacheEvents",
+      "debugLogs",
+      "enableGoogleDMA",
+      "encryptRequests",
+      "initializeOnAwake",
+      "optIn",
+      "requestTrackingAuthorization",
+      "sdkKey",
+      "useConsentManagementPlatform"
+    ],
+    "methods": {
+      "GetTenjinInstance": [
+        0
+      ],
+      "Initialize": [
+        0
+      ]
+    },
+    "static_properties": [
+      "Instance"
+    ]
+  }
+}
