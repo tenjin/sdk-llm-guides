@@ -475,11 +475,23 @@ void onAdRevenuePaid(MaxAd ad) {
 
 ### AdMob
 
+> **Important:** despite its name, `value_micros` is **not** in micros on iOS. The iOS SDK reads it as
+> currency units (e.g. `0.012245` USD); the Android SDK reads it as micros (e.g. `12245`).
+> `google_mobile_ads` reports micros on both platforms, so divide by 1,000,000 on iOS only.
+> Sending raw micros on iOS inflates ad revenue 1,000,000x; dividing on Android reports 1,000,000x too little.
+
 ```dart
+import 'dart:io' show Platform;
+
 void onPaidEvent(AdValue adValue, String adUnitId) {
+  // adValue.valueMicros is in micros on both platforms
+  final value = Platform.isIOS
+      ? adValue.valueMicros / 1000000.0
+      : adValue.valueMicros;
+
   TenjinSDK.instance.eventAdImpressionAdMob({
     'ad_unit_id': adUnitId,
-    'value_micros': adValue.valueMicros,
+    'value_micros': value,
     'currency_code': adValue.currencyCode,
     'precision_type': adValue.precisionType.index,
   });
@@ -601,6 +613,7 @@ When integrating Tenjin into a Flutter project, verify these items:
 | Not calling `registerAppForAdNetworkAttribution()` | SKAdNetwork postbacks won't work | Call it during iOS initialization |
 | Event names over 80 characters | Will be rejected | Keep event names concise |
 | Exceeding 500 unique event names | Additional events will be dropped | Reuse event names with different values |
+| Sending AdMob `value_micros` without platform branching | iOS reads it as currency units, Android as micros; revenue is off by 1,000,000x | Divide `adValue.valueMicros` by 1,000,000 on iOS only |
 | Sending subscription transactions during trial | Inflates revenue metrics | Only send at first charge and renewals |
 | Missing `developer_device_id` in opt-in params | Events will not be processed | Always include `developer_device_id` in `optInParams` |
 

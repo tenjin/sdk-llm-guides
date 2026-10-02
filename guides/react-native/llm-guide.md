@@ -367,6 +367,28 @@ Tenjin.eventAdImpressionHyperBid(impressionDataJson);
 Tenjin.eventAdImpressionTopOn(impressionDataJson);
 ```
 
+### AdMob value units
+
+> **Important:** despite its name, `value_micros` is **not** in micros on iOS. The iOS SDK reads it as
+> currency units (e.g. `0.012245` USD); the Android SDK reads it as micros (e.g. `12245`).
+> AdMob reports micros on both platforms, so divide by 1,000,000 on iOS only.
+> Sending raw micros on iOS inflates ad revenue 1,000,000x; dividing on Android reports 1,000,000x too little.
+
+```javascript
+import { Platform } from 'react-native';
+
+// valueMicros: the paid-event value in micros, as your AdMob library reports it.
+// Check your library's docs: some expose it already converted to currency units.
+const sendAdMobImpression = ({ adUnitId, valueMicros, currencyCode, precisionType }) => {
+  Tenjin.eventAdImpressionAdMob({
+    ad_unit_id: adUnitId,
+    value_micros: Platform.OS === 'ios' ? valueMicros / 1000000 : valueMicros,
+    currency_code: currencyCode,
+    precision_type: precisionType,
+  });
+};
+```
+
 ---
 
 ## 11. User Identity
@@ -427,6 +449,7 @@ When integrating Tenjin into a React Native project, verify these items:
 | Sending events before `connect()` | Events will not be processed | Always call `connect()` first |
 | Event names over 80 characters | Will be rejected | Keep event names concise |
 | Exceeding 500 unique event names | Additional events will be dropped | Reuse event names with different values |
+| Sending AdMob `value_micros` without platform branching | iOS reads it as currency units, Android as micros; revenue is off by 1,000,000x | Divide the micros value by 1,000,000 on iOS only |
 
 ---
 
