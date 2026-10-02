@@ -55,6 +55,11 @@ guides/
 │   └── llm-guide.md      # React Native integration guide
 └── unity/
     └── llm-guide.md      # Unity integration guide
+scripts/
+├── check_guides.py       # CI: checks the guides against sdk-symbols/
+├── update_sdk_symbols.py # Regenerates sdk-symbols/ from the public SDK distributions
+└── test_check_guides.py  # Tests for the checker
+sdk-symbols/              # Public API of the newest published SDK, one file per platform
 ```
 
 ## For LLMs
@@ -73,8 +78,23 @@ When adding a new platform guide:
 1. Create `guides/{platform}/llm-guide.md`
 2. Add platform detection hints to `guides/llm-guide.md`
 3. Keep guides self-contained
-4. Don't hardcode SDK versions — check latest release
+4. Don't hardcode SDK versions, and don't write "use the latest" either: give the exact command or URL that returns the current version
 5. Include code examples, checklist, common mistakes
+6. Include the sections every guide has: one app and one SDK key per platform, where `connect()` goes, and how to verify from the device log
+
+See [`AGENTS.md`](AGENTS.md) for the full conventions.
+
+## Checking the guides against the SDKs
+
+Every Tenjin API a guide names in a code block must exist in the published SDK. CI enforces this:
+
+```bash
+python3 scripts/check_guides.py          # what CI runs on every pull request
+python3 scripts/test_check_guides.py     # tests for the checker itself
+python3 scripts/update_sdk_symbols.py    # after an SDK release: refresh sdk-symbols/, then re-run the check
+```
+
+`sdk-symbols/` holds the public API of the newest published SDK per platform, generated from Maven Central, CocoaPods and GitHub, pub.dev and npm. The check does not compile the snippets: argument types, calls into other libraries and prose are not covered.
 
 ## Resources
 
@@ -83,4 +103,5 @@ When adding a new platform guide:
 - [Tenjin Flutter SDK](https://github.com/tenjin/flutter-sdk)
 - [Tenjin Ionic SDK](https://github.com/tenjin/tenjin-ionic-sdk)
 - [Tenjin React Native SDK](https://github.com/tenjin/tenjin-react-native-sdk)
+- [Tenjin Unity SDK](https://github.com/tenjin/tenjin-unity-sdk)
 - [Tenjin Documentation](https://docs.tenjin.com/)
