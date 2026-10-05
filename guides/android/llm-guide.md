@@ -431,10 +431,11 @@ instance.subscription(
 
 **Notes:**
 - **Not automatic:** `connect()` does not capture subscriptions. `subscription(...)` must be called from the purchase-handling code. This is the usual cause of "events arrive but subscriptions don't".
-- **Send once per subscription, not once per renewal.** Tenjin resolves renewals, trials and cancellations server-side from the purchase token.
-- `productId` and `purchaseToken` are required; the call is dropped if either is empty.
+- **Send once per subscription, not once per renewal.** Tenjin resolves renewals, trials and cancellations server-side from the purchase token. Repeat sends for the same purchase token are de-duplicated.
+- `productId` and `purchaseToken` are required; the call is dropped if either is empty. The other fields are optional.
 - Also send the subscriptions returned by `queryPurchasesAsync`, so restored purchases and purchases made on another device are covered.
 - Acknowledge the purchase. Google Play refunds subscriptions that are not acknowledged within three days.
+- Full guide: [SUBSCRIPTIONS_TRACKING.md](https://github.com/tenjin/tenjin-android-sdk/blob/master/SUBSCRIPTIONS_TRACKING.md). For purchase handling, see [Google Play Billing subscriptions](https://developer.android.com/google/play/billing/subscriptions).
 
 ---
 
