@@ -1,53 +1,65 @@
 # Tenjin Flutter SDK — Integration Reference for AI Assistants
 
-> **Purpose:** This document is a self-contained technical reference designed for LLMs and AI coding assistants. It provides everything needed to integrate the Tenjin Flutter SDK into a Flutter project without requiring external documentation lookups.
+> **Purpose:** This document is a self-contained technical reference designed for LLMs and AI coding assistants. It provides everything needed to integrate the Tenjin Flutter SDK into a Flutter project without requiring external documentation lookups, except for the version lookup below.
 >
-> **Requirements:** Flutter >= 3.3.0 | Dart >= 3.0.0 | iOS 10.0+ | Android API 21+
+> **Requirements:** Flutter >= 3.3.0 | Dart >= 3.0.0 | iOS 12.0+ | Android API 21+
 >
 > **Sources:**
-> - Repository: [github.com/tenjin/tenjin-flutter-sdk](https://github.com/tenjin/tenjin-flutter-sdk)
-> - Full README: [README.md](https://github.com/tenjin/tenjin-flutter-sdk/blob/master/README.md)
+> - Repository: [github.com/tenjin/flutter-sdk](https://github.com/tenjin/flutter-sdk)
+> - Full README: [README.md](https://github.com/tenjin/flutter-sdk/blob/main/README.md)
+> - Subscriptions: [SUBSCRIPTIONS_TRACKING.md](https://github.com/tenjin/flutter-sdk/blob/main/SUBSCRIPTIONS_TRACKING.md)
 > - pub.dev: [tenjin_plugin](https://pub.dev/packages/tenjin_plugin)
->
-> **Important:** Always check the [latest release](https://pub.dev/packages/tenjin_plugin) before integrating. Do not use hardcoded version numbers from this document — fetch the current version from pub.dev.
 
 ---
 
 ## Before You Begin
 
-### Check the Latest SDK Version
+### Resolve the SDK Version
 
-Before writing any integration code:
+This document contains no SDK version number on purpose. **Do not use a version you remember**: versions recalled from training data are usually many releases old.
 
-1. **Fetch the latest version** from [pub.dev](https://pub.dev/packages/tenjin_plugin)
-2. **Use that version** in your `pubspec.yaml` declaration
-3. **Do not hardcode** version numbers from this document — they may be outdated
+The simplest way is to let `flutter pub add` resolve and write the current version (Section 1). To see the current version, or if you edit `pubspec.yaml` by hand, run this and use its output wherever a snippet says `<TENJIN_SDK_VERSION>`:
 
-### Get the SDK Key
+```bash
+curl -s https://pub.dev/api/packages/tenjin_plugin | sed -n 's/.*"latest":{"version":"\([^"]*\)".*/\1/p'
+```
 
-**Ask the developer for their Tenjin SDK key.** Every code example in this document uses `<SDK_KEY>` as a placeholder. Before writing any integration code, prompt the user:
+If you cannot run commands, fetch `https://pub.dev/api/packages/tenjin_plugin` and read `latest.version`. If you can do neither, stop and ask the developer for the current version. Never leave `<TENJIN_SDK_VERSION>` in `pubspec.yaml` and never guess.
 
-> "What is your Tenjin SDK key? You can find it in the [Tenjin dashboard](https://www.tenjin.com/dashboard/organizations) on your app's page. Each app has up to 3 unique keys. If you don't have it handy, I can use a placeholder and you can fill it in later — just search your project for `TENJIN_SDK_KEY_PLACEHOLDER` to find it."
+### One App and One SDK Key per Platform
 
-If the developer provides their key, substitute it directly in all generated code. If they prefer to add it later, use the literal string `TENJIN_SDK_KEY_PLACEHOLDER` so it is easy to find with a project-wide search.
+A Tenjin app is **one bundle ID / application ID on one platform**. A Flutter project that ships on iOS and Android is therefore **two Tenjin apps with two SDK keys**, and the code must pick the right one at runtime:
+
+- Tenjin's servers look the app up by the platform and the bundle ID the request carries, then check that the SDK key belongs to that app. The iOS key is refused on Android and the Android key is refused on iOS.
+- Anything that changes the bundle ID changes the Tenjin app: an Android `applicationIdSuffix ".debug"`, a product flavor, or an iOS configuration with its own `PRODUCT_BUNDLE_IDENTIFIER`. Either register that ID as its own app in the Tenjin dashboard and use its key in those builds, or expect those builds to be rejected (see [Verify from the Device Log](#5-verify-from-the-device-log)).
+
+Before writing code, read the Android `applicationId` (and suffixes/flavors) in `android/app/build.gradle(.kts)` and the iOS `PRODUCT_BUNDLE_IDENTIFIER` in `ios/Runner.xcodeproj/project.pbxproj`, and tell the developer which IDs the project produces.
+
+### Get the SDK Keys
+
+**Ask the developer for one Tenjin SDK key per platform the project builds for.** Code examples use `<IOS_SDK_KEY>` and `<ANDROID_SDK_KEY>` as placeholders (`<SDK_KEY>` where the platform does not matter). Before writing any integration code, prompt the user:
+
+> "Tenjin needs one SDK key per platform. What is the SDK key of your iOS app (bundle ID `<the iOS bundle ID you found>`) and of your Android app (application ID `<the Android ID you found>`)? You can find each in the [Tenjin dashboard](https://www.tenjin.com/dashboard/organizations) on that app's page. If you don't have them handy, I can use placeholders and you can fill them in later — just search your project for `TENJIN_SDK_KEY_PLACEHOLDER` to find them."
+
+If the developer provides the keys, substitute them directly in all generated code. If they prefer to add them later, use the literal strings `TENJIN_SDK_KEY_PLACEHOLDER_IOS` and `TENJIN_SDK_KEY_PLACEHOLDER_ANDROID` so they are easy to find with a project-wide search. If the project builds for one platform only, ask for that key only. Never copy a key from a sample project or from another app.
 
 ## Integration Workflow
 
 Follow this two-step approach:
 
-1. **First, integrate the basics.** Complete sections 1–4 (Installation, iOS Setup, Android Setup, Core Initialization). This gives the developer install tracking, session tracking, and ATT support — the foundation every Tenjin integration needs.
+1. **First, integrate the basics.** Complete sections 1–5 (Installation, iOS Setup, Android Setup, Core Initialization, Verify from the Device Log). This gives the developer install tracking, session tracking, and ATT support — the foundation every Tenjin integration needs.
 
 2. **Then, ask what else they need.** After the basic integration is working, prompt the user:
 
 > "Tenjin basic integration is done (install tracking + ATT). Would you like to add any of these features?"
-> - **Purchase tracking** — track in-app purchases with receipt validation (Section 5)
-> - **Subscription tracking** — track subscription IAP with StoreKit 2 or Google Play Billing (Section 6)
-> - **Custom events** — track in-app actions like level completions or signups (Section 7)
-> - **SKAdNetwork conversion values** — for SKAN attribution on iOS (Section 8)
-> - **GDPR / consent management** — opt-in/out, CMP, Google DMA (Section 9)
-> - **Deep linking** — handle attribution deep links (Section 10)
-> - **Ad revenue (ILRD)** — impression-level revenue from ad networks (Section 11, paid feature)
-> - **User identity & analytics** — customer user IDs, analytics IDs (Section 12)
+> - **Purchase tracking** — track in-app purchases with receipt validation (Section 6)
+> - **Subscription tracking** — track subscription IAP with StoreKit 2 or Google Play Billing (Section 7)
+> - **Custom events** — track in-app actions like level completions or signups (Section 8)
+> - **SKAdNetwork conversion values** — for SKAN attribution on iOS (Section 9)
+> - **GDPR / consent management** — opt-in/out, CMP, Google DMA (Section 10)
+> - **Attribution info & deep links** — LiveOps attribution data, re-engagement deep links (Section 11)
+> - **Ad revenue (ILRD)** — impression-level revenue from ad networks (Section 12, paid feature)
+> - **User identity & analytics** — customer user IDs, analytics IDs, user profile (Section 13)
 
 Only implement the sections the developer requests. Do not add features they didn't ask for.
 
@@ -57,21 +69,37 @@ Only implement the sections the developer requests. Do not add features they did
 
 Tenjin is a mobile attribution and analytics platform. The SDK tracks app installs, sessions, in-app purchases, ad revenue, and custom events. It integrates with Apple's ATT framework and SKAdNetwork for privacy-compliant attribution on iOS, and supports Google Play and Amazon stores on Android.
 
+The Flutter plugin is a thin wrapper around the native Tenjin iOS and Android SDKs. Its whole Dart API is the `TenjinSDK` class in `package:tenjin_plugin/tenjin_sdk.dart`.
+
 ---
 
 ## 1. Installation
 
-Add the dependency to your `pubspec.yaml`:
+Add the dependency with:
+
+```bash
+flutter pub add tenjin_plugin
+```
+
+This resolves the current version from pub.dev and writes it to `pubspec.yaml`. If you edit `pubspec.yaml` by hand instead, use the version from [Resolve the SDK Version](#resolve-the-sdk-version):
 
 ```yaml
 dependencies:
-  tenjin_plugin: ^1.3.0  # Check pub.dev for latest version
+  tenjin_plugin: ^<TENJIN_SDK_VERSION>
 ```
 
 Then run:
 
 ```bash
 flutter pub get
+```
+
+If `tenjin_plugin` is already in `pubspec.yaml` with an older constraint, run `flutter pub upgrade tenjin_plugin` and check that `pubspec.lock` shows the current version.
+
+The import is:
+
+```dart
+import 'package:tenjin_plugin/tenjin_sdk.dart';
 ```
 
 ---
@@ -83,7 +111,7 @@ flutter pub get
 Add these keys to `ios/Runner/Info.plist`:
 
 ```xml
-<!-- Required for ATT prompt (iOS 14+) -->
+<!-- Required for the ATT prompt (iOS 14+). The app crashes on the ATT request if this is missing. -->
 <key>NSUserTrackingUsageDescription</key>
 <string>We use this data to provide a better and personalized ad experience.</string>
 
@@ -94,10 +122,10 @@ Add these keys to `ios/Runner/Info.plist`:
 
 ### Podfile Configuration
 
-Ensure your `ios/Podfile` has the minimum iOS version set:
+The plugin requires iOS 12.0 or higher. Make sure `ios/Podfile` does not set a lower platform:
 
 ```ruby
-platform :ios, '10.0'
+platform :ios, '12.0'
 ```
 
 After adding the plugin, run:
@@ -110,21 +138,32 @@ cd ios && pod install
 
 ## 3. Android Platform Setup
 
-### AndroidManifest.xml Permissions
+The plugin already bundles the Google libraries the native SDK needs (Advertising ID, App Set ID, Install Referrer). Do not add them to the app's Gradle file.
 
-Add these permissions to `android/app/src/main/AndroidManifest.xml`:
+### AndroidManifest.xml
+
+Add these to `android/app/src/main/AndroidManifest.xml`:
 
 ```xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<manifest>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-<!-- Required for Android 13+ (API 33) -->
-<uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <!-- Required to read the Advertising ID on Android 13+ (API 33) -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+
+    <application>
+        <!-- Possible values: googleplay, amazon, other -->
+        <meta-data android:name="TENJIN_APP_STORE" android:value="googleplay" />
+    </application>
+</manifest>
 ```
 
-### build.gradle Configuration
+The Dart API has no call to set the app store, so the `TENJIN_APP_STORE` meta-data is the only way to set it. Without it the store is reported as `unspecified`.
 
-In `android/app/build.gradle`, ensure the minimum SDK is set:
+### Minimum SDK
+
+The plugin requires `minSdk` 21 or higher. In `android/app/build.gradle`:
 
 ```gradle
 android {
@@ -134,93 +173,203 @@ android {
 }
 ```
 
+Or in `android/app/build.gradle.kts`:
+
+```kotlin
+android {
+    defaultConfig {
+        minSdk = 21
+    }
+}
+```
+
+If the file uses `flutter.minSdkVersion`, leave it when it already resolves to 21 or higher.
+
 ### ProGuard / R8 Rules
 
-If using code obfuscation, add these rules to `android/app/proguard-rules.pro`:
+Flutter release builds are minified by default. Add these rules to `android/app/proguard-rules.pro` (create the file and reference it from the `release` build type with `proguardFiles` if the project has none):
 
 ```
 -keep class com.tenjin.** { *; }
 -keep public class com.google.android.gms.ads.identifier.** { *; }
 -keep public class com.google.android.gms.common.** { *; }
+-keep public class com.google.android.gms.appset.** { *; }
 -keep public class com.android.installreferrer.** { *; }
+-keep class * extends java.util.ListResourceBundle {
+    protected java.lang.Object[][] getContents();
+}
+
+# Keep the signatures that Gson/TypeToken rely on
+-keepattributes Signature
 -keepattributes *Annotation*
+
+# General Gson/TypeToken protection
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
 ```
 
 ---
 
 ## 4. Core Initialization
 
-### Best Practice: Request ATT Then Connect
+### Where connect() Goes
 
-On iOS 14+, Apple requires the ATT prompt before accessing the IDFA. The **recommended** pattern is to request tracking authorization first, then call `connect()`. This ensures Tenjin receives the IDFA when the user grants permission.
+- **On every launch and every return to the foreground**, not only on first open. Tenjin needs the session data, and accounts that only connect on first open may be suspended.
+- **On iOS, after the user has answered the tracking prompt.** Calling `connect()` before the ATT answer sends a zeroed IDFA and degrades attribution.
+- **Request ATT only when the app is active.** iOS shows the prompt only while the app is in the foreground and active. A request made in `main()` before the first frame may not display. Wait for the first frame or for the `resumed` lifecycle state.
+- **If the app already has a tracking prompt, hook into it. Do not add a second one.** Search the project for `requestTrackingAuthorization` and for packages such as `app_tracking_transparency`. If the app already asks, call `TenjinSDK.instance.connect()` after that existing request completes and leave out the Tenjin `requestTrackingAuthorization()` call.
 
-> **Critical:** `connect()` must run on **every** app launch, not just the first launch. Tenjin may suspend accounts that only call connect on first open.
+Calling `connect()` on every resume is safe: the native SDKs skip a `connect()` that comes within 30 seconds of the previous one.
 
 ### Recommended Implementation
 
 ```dart
-import 'dart:io';
-import 'package:tenjin_plugin/tenjin_plugin.dart';
+import 'dart:io' show Platform;
 
-class TenjinService {
-  static final TenjinSDK _instance = TenjinSDK.instance;
+import 'package:flutter/widgets.dart';
+import 'package:tenjin_plugin/tenjin_sdk.dart';
 
-  static Future<void> initialize() async {
-    // Initialize with API key
-    _instance.init(apiKey: '<SDK_KEY>');
+class TenjinService with WidgetsBindingObserver {
+  TenjinService._();
 
-    // Register for SKAdNetwork (iOS only)
+  static final TenjinService instance = TenjinService._();
+
+  bool _connecting = false;
+
+  /// Call once from main(), after WidgetsFlutterBinding.ensureInitialized().
+  void start() {
+    // One key per platform: an iOS app and an Android app are two Tenjin apps.
+    final sdkKey = Platform.isAndroid ? '<ANDROID_SDK_KEY>' : '<IOS_SDK_KEY>';
+    TenjinSDK.instance.initialize(sdkKey: sdkKey);
+
     if (Platform.isIOS) {
-      _instance.registerAppForAdNetworkAttribution();
+      // SKAdNetwork registration; only has an effect on iOS 14.0-15.3.
+      TenjinSDK.instance.registerAppForAdNetworkAttribution();
     }
 
-    // Request ATT and connect
-    await _connectWithATT();
+    WidgetsBinding.instance.addObserver(this);
+    // First launch: wait for the first frame so iOS can show the ATT prompt.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _connect());
   }
 
-  static Future<void> _connectWithATT() async {
-    if (Platform.isIOS) {
-      // Request tracking authorization first (iOS 14+)
-      await _instance.requestTrackingAuthorization();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _connect();
     }
+  }
 
-    // Always connect after ATT request completes
-    _instance.connect();
+  Future<void> _connect() async {
+    if (_connecting) return;
+    _connecting = true;
+    try {
+      // iOS 14+: shows the ATT prompt the first time, returns at once afterwards.
+      // Android: returns true at once.
+      await TenjinSDK.instance.requestTrackingAuthorization();
+      TenjinSDK.instance.connect();
+    } finally {
+      _connecting = false;
+    }
   }
 }
 ```
 
 ### Using in Your App
 
-Call the initialization early in your app lifecycle:
-
 ```dart
 import 'package:flutter/material.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await TenjinService.initialize();
-  runApp(MyApp());
+  TenjinService.instance.start();
+  runApp(const MyApp());
 }
 ```
 
-### Enable Debug Logging (Development Only)
-
-The Flutter SDK does not expose a debug log method directly. To verify integration:
-1. Use the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics) in the Tenjin dashboard
-2. Check native logs in Xcode (iOS) or Android Studio (Android)
+> **Note:** `init(apiKey:)` is deprecated. Use `initialize(sdkKey:)`.
 
 ---
 
-## 5. Purchase Event Tracking
+## 5. Verify from the Device Log
+
+Do this before adding any optional feature, **once per platform**: the two platforms use different keys and different Tenjin apps, so one passing does not prove the other.
+
+The Dart API has no debug-log call. The log lines come from the native SDKs.
+
+### Android
+
+Run on a device or emulator with Google Play services. The native SDK logs every request under the Logcat tag **`HttpConnection`** (not `TenjinSDK`), and labels every request `Tenjin::connect` regardless of its type:
+
+```bash
+adb logcat -s HttpConnection:D TenjinSDK:D
+```
+
+A working integration prints, on launch:
+
+```text
+D/TenjinSDK: Connecting...
+D/HttpConnection: Tenjin request URL: https://track.tenjin.com/v0/event
+D/HttpConnection: Tenjin::connect params: {...}
+D/HttpConnection: Tenjin::connect response: {"code":200,"success":true}
+```
+
+The Android SDK logs the response body, not the HTTP status. Match on the text in the table below.
+
+### iOS
+
+The native iOS SDK prints requests and responses only after its `debugLogs()` method has been called. In a development build, call it natively in `ios/Runner/AppDelegate.swift` before `GeneratedPluginRegistrant.register(with: self)`:
+
+```swift
+import TenjinSDK
+
+#if DEBUG
+TenjinSDK.debugLogs()
+#endif
+```
+
+If `import TenjinSDK` does not resolve in the Runner target, skip this and verify iOS with the dashboard tool below instead. With debug logs on, the Xcode console shows:
+
+```text
+[Tenjin] - LOG: Connect request
+[Tenjin] - LOG: Got http response 200
+[Tenjin] - DEBUG: Response body {"code":200,"success":true}
+```
+
+On iOS the line that decides is `Got http response <status>`. The iOS SDK prints no error for a rejected request, so read the status code.
+
+### What the Response Means
+
+| Response contains | HTTP status | Meaning | What to do |
+|-------------------|-------------|---------|------------|
+| `"success":true` | 200 | Accepted | Nothing. The integration works on this platform |
+| `unauthorized` | 401 | The SDK key is unknown, or it is not the key of this app | Check the runtime key selection: the iOS key on iOS, the Android key on Android, each from that app's page in the dashboard |
+| `no such app` | 404 | There is no Tenjin app for this bundle ID on this platform | Create the app in the dashboard with exactly this ID, or fix the ID (check debug suffixes and flavors) |
+| `invalid device identifier` | 202 | The request carried no advertising ID | Android: add the `AD_ID` permission and test on a device with Google Play services |
+| `not logged` | 202 | The SDK key is disabled | Enable the key in the dashboard or use another key of the same app |
+| `ignored` | 202 | The request was filtered by an app-version rule configured for the app | Check the app's version rules in the dashboard |
+
+A 202 is **not** success: the request was received and dropped.
+
+### No Request at All
+
+A `connect()` within 30 seconds of the previous one is skipped by the native SDK and sends nothing. The timestamp is stored on the device, so it survives an app restart and a hot restart.
+
+- Android logs `Connect deduped by persisted timestamp` under the tag `TenjinSDK`. Wait 30 seconds or clear the app's data (`adb shell pm clear <applicationId>`).
+- iOS logs `Connect sent ...s ago (interval: 30.0s), ignoring duplicate ping` with debug logs on. Wait 30 seconds or reinstall the app.
+
+### In the Dashboard
+
+After a 200 response, the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics) shows events for devices registered as test devices.
+
+---
+
+## 6. Purchase Event Tracking
 
 ### Transaction with Receipt Validation
 
-For validated purchases, pass platform-specific receipt data:
+For validated purchases, pass platform-specific receipt data. On iOS both `iosReceipt` and `iosTransactionId` are required; on Android both `androidPurchaseData` and `androidDataSignature` are required. If they are missing the call is dropped.
 
 ```dart
-import 'dart:io';
-
 void trackPurchase({
   required String productId,
   required String currencyCode,
@@ -248,24 +397,36 @@ void trackPurchase({
 
 ### Manual Revenue (No Validation)
 
-When not using platform receipt validation:
+When not using platform receipt validation. Note that `quantity` is a `double` in this method:
 
 ```dart
 TenjinSDK.instance.transaction(
   'premium_upgrade',  // productName
   'USD',              // currencyCode
-  1,                  // quantity
+  1.0,                // quantity (double)
   9.99,               // unitPrice
 );
 ```
 
 ---
 
-## 6. Subscription Tracking
+## 7. Subscription Tracking
 
-For subscription purchases, use the `subscription` method with full transaction data:
+Subscriptions are **not** captured by `connect()`. One of the methods below must be called from the purchase-handling code.
 
-### iOS (StoreKit 2)
+### iOS
+
+The simplest path lets the native SDK fetch the StoreKit 2 transaction itself (iOS 16+; does nothing on Android):
+
+```dart
+await TenjinSDK.instance.subscriptionWithStoreKit(
+  productId: 'com.example.premium_monthly',
+  currencyCode: 'USD',
+  unitPrice: 9.99,
+);
+```
+
+Or pass the StoreKit 2 data yourself. On iOS **all four** `ios*` parameters are required; if one is missing the call is dropped with a console message:
 
 ```dart
 TenjinSDK.instance.subscription(
@@ -274,12 +435,14 @@ TenjinSDK.instance.subscription(
   unitPrice: 9.99,
   iosTransactionId: '2000000123456789',
   iosOriginalTransactionId: '2000000123456789',
-  iosReceipt: 'base64_encoded_receipt_data',
-  iosSKTransaction: '{"id": 2000000123456789, ...}',  // JSON serialized transaction
+  iosReceipt: 'jws_signed_transaction',
+  iosSKTransaction: '{"id": 2000000123456789, ...}',  // StoreKit 2 transaction JSON
 );
 ```
 
 ### Android (Google Play Billing)
+
+On Android all three `android*` parameters are required:
 
 ```dart
 TenjinSDK.instance.subscription(
@@ -294,44 +457,44 @@ TenjinSDK.instance.subscription(
 
 ### Integration with in_app_purchase Package
 
-If using the `in_app_purchase` package, extract the necessary data from `PurchaseDetails`:
+If using the `in_app_purchase` package:
 
 ```dart
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'dart:io' show Platform;
 
-void trackSubscription(PurchaseDetails purchase, ProductDetails product) {
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:tenjin_plugin/tenjin_sdk.dart';
+
+Future<void> trackSubscription(PurchaseDetails purchase, ProductDetails product) async {
   if (Platform.isIOS) {
-    final iosPurchase = purchase as AppStorePurchaseDetails;
-    TenjinSDK.instance.subscription(
+    // The native SDK reads the StoreKit 2 transaction for this product.
+    await TenjinSDK.instance.subscriptionWithStoreKit(
       productId: purchase.productID,
       currencyCode: product.currencyCode,
       unitPrice: product.rawPrice,
-      iosTransactionId: purchase.purchaseID ?? '',
-      iosOriginalTransactionId: iosPurchase.skPaymentTransaction.originalTransaction?.transactionIdentifier ?? purchase.purchaseID ?? '',
-      iosReceipt: purchase.verificationData.localVerificationData,
     );
-  } else if (Platform.isAndroid) {
-    final androidPurchase = purchase as GooglePlayPurchaseDetails;
+  } else if (Platform.isAndroid && purchase is GooglePlayPurchaseDetails) {
+    final billingPurchase = purchase.billingClientPurchase;
     TenjinSDK.instance.subscription(
       productId: purchase.productID,
       currencyCode: product.currencyCode,
       unitPrice: product.rawPrice,
-      androidPurchaseToken: androidPurchase.billingClientPurchase.purchaseToken,
-      androidPurchaseData: androidPurchase.billingClientPurchase.originalJson,
-      androidDataSignature: androidPurchase.billingClientPurchase.signature,
+      androidPurchaseToken: billingPurchase.purchaseToken,
+      androidPurchaseData: billingPurchase.originalJson,
+      androidDataSignature: billingPurchase.signature,
     );
   }
 }
 ```
 
 **Notes:**
-- Add your **App-Specific Shared Secret** (iOS) or **Base64-encoded RSA public key** (Android) in the Tenjin dashboard
-- Send **one transaction per billing interval** (at first charge and each renewal)
-- Do **not** send transactions during free trial periods
+- **iOS:** add the app's **App-Specific Shared Secret** in the Tenjin dashboard. Send one transaction per billing interval (first charge and each renewal), and none during a free trial.
+- **Android:** subscriptions are verified through the **Google Play Developer API**, so the Android app needs Google Play Developer API access configured in the Tenjin dashboard (a different credential from the RSA public key used for one-time purchases). Send **once per subscription**, not once per renewal: Tenjin resolves renewals, trials and cancellations from the purchase token.
 
 ---
 
-## 7. Custom Events
+## 8. Custom Events
 
 > **Prerequisite:** `connect()` must have been called before sending any custom events.
 
@@ -349,10 +512,10 @@ TenjinSDK.instance.eventWithNameAndValue('coins_spent', 50);
 
 ---
 
-## 8. SKAdNetwork Conversion Values (iOS Only)
+## 9. SKAdNetwork Conversion Values (iOS Only)
 
 ```dart
-import 'dart:io';
+import 'dart:io' show Platform;
 
 // Basic conversion value (0-63)
 if (Platform.isIOS) {
@@ -374,12 +537,12 @@ Valid coarse values: `"low"`, `"medium"`, `"high"`
 
 ---
 
-## 9. GDPR & Privacy Compliance
+## 10. GDPR & Privacy Compliance
 
 ### Full Opt-In / Opt-Out
 
 ```dart
-TenjinSDK.instance.init(apiKey: '<SDK_KEY>');
+TenjinSDK.instance.initialize(sdkKey: '<SDK_KEY>');
 
 if (userConsented) {
   TenjinSDK.instance.optIn();
@@ -399,6 +562,8 @@ TenjinSDK.instance.optInParams([
   'advertising_id',
   'developer_device_id',
   'limit_ad_tracking',
+  'referrer',
+  'iad',
 ]);
 
 // Or send everything EXCEPT these parameters
@@ -409,14 +574,14 @@ TenjinSDK.instance.optOutParams([
 ]);
 ```
 
-> **Required parameter:** `developer_device_id` must always be included for proper device tracking. Events missing this parameter will not be processed.
+> **Required parameters:** Tenjin needs at least `ip_address`, `advertising_id`, `developer_device_id`, `limit_ad_tracking`, `referrer` (Android) and `iad` (iOS) to track devices.
 
 ### CMP-Based Consent
 
 Automatically opt in/out based on CMP consent (TCF purpose 1):
 
 ```dart
-TenjinSDK.instance.init(apiKey: '<SDK_KEY>');
+TenjinSDK.instance.initialize(sdkKey: '<SDK_KEY>');
 TenjinSDK.instance.optInOutUsingCMP();
 TenjinSDK.instance.connect();
 ```
@@ -434,31 +599,44 @@ TenjinSDK.instance.optOutGoogleDMA();
 
 ---
 
-## 10. Deep Linking
+## 11. Attribution Info & Deep Links
 
-The Flutter SDK retrieves deferred deep link data through the attribution info:
-
-```dart
-Future<void> handleDeepLink() async {
-  final attributionInfo = await TenjinSDK.instance.getAttributionInfo();
-
-  if (attributionInfo != null && attributionInfo['clicked_tenjin_link'] == true) {
-    // User came from a Tenjin attribution link
-    final campaign = attributionInfo['campaign_name'];
-    final adset = attributionInfo['adset_name'];
-
-    // Handle deep link parameters
-  }
-}
-```
+### Attribution Info (LiveOps Campaigns)
 
 > **Note:** `getAttributionInfo()` is a paid feature. Contact your Tenjin account manager for access.
 
+```dart
+Future<void> readAttribution() async {
+  final info = await TenjinSDK.instance.getAttributionInfo();
+  if (info == null) return;
+
+  final adNetwork = info['ad_network'];
+  final campaignId = info['campaign_id'];
+  final campaignName = info['campaign_name'];
+}
+```
+
+Values are returned only when available. Other keys: `advertising_id`, `tenjin_parameter_0` … `tenjin_parameter_5`.
+
+### Re-engagement Deep Links
+
+Report the URL the app was opened with, so re-engagement clicks can be attributed. Forward both the launch link and links received while the app is running, from whatever deep-link package the app uses:
+
+```dart
+void reportOpenUrl(Uri uri) {
+  TenjinSDK.instance.handleOpenUrl(uri.toString());
+}
+```
+
+On Android, opens that start or recreate the Activity are captured automatically, so this is only needed for links delivered to an Activity that is already running.
+
 ---
 
-## 11. Impression Level Ad Revenue (ILRD)
+## 12. Impression Level Ad Revenue (ILRD)
 
 > **Note:** ILRD is a paid feature. Contact your Tenjin account manager before implementing.
+
+Every method takes a `Map<String, dynamic>`.
 
 ### AppLovin
 
@@ -527,13 +705,13 @@ TenjinSDK.instance.eventAdImpressionHyperBid(hyperBidImpressionData);
 
 ```dart
 TenjinSDK.instance.eventAdImpressionTradPlus(tradPlusAdInfo);
-// or with platform-aware conversion
+// or, to pass TradPlus's own adInfo map and let the plugin convert its keys per platform
 TenjinSDK.instance.eventAdImpressionTradPlusAdInfo(tradPlusAdInfo);
 ```
 
 ---
 
-## 12. User Identity & Analytics
+## 13. User Identity & Analytics
 
 ### Customer User ID
 
@@ -553,14 +731,30 @@ A locally generated persistent identifier (useful when IDFA/AAID is unavailable)
 String? analyticsId = await TenjinSDK.instance.getAnalyticsInstallationId();
 ```
 
+### User Profile Data
+
+```dart
+Map<String, dynamic>? profile = await TenjinSDK.instance.getUserProfileDictionary();
+
+if (profile != null) {
+  final sessionCount = profile['session_count'];
+  final totalSessionTimeMs = profile['total_session_time'];
+  final iapCount = profile['iap_transaction_count'];
+  final adRevenueUsd = profile['total_ilrd_revenue_usd'];
+}
+
+// Reset all profile data
+TenjinSDK.instance.resetUserProfile();
+```
+
 ---
 
-## 13. Additional Configuration
+## 14. Additional Configuration
 
 ### A/B Testing with App Subversion
 
 ```dart
-TenjinSDK.instance.init(apiKey: '<SDK_KEY>');
+TenjinSDK.instance.initialize(sdkKey: '<SDK_KEY>');
 TenjinSDK.instance.appendAppSubversion(8888);  // Reports as e.g. "1.0.1.8888"
 TenjinSDK.instance.connect();
 ```
@@ -573,6 +767,8 @@ Enable retry/cache for events when the device has no connectivity:
 TenjinSDK.instance.setCacheEventSetting(true);
 ```
 
+The setting is stored on the device. Removing the call in a later release does not turn caching off; call `setCacheEventSetting(false)` to disable it.
+
 ### Request Encryption
 
 Enable encryption for SDK requests:
@@ -583,52 +779,64 @@ TenjinSDK.instance.setEncryptRequestsSetting(true);
 
 ---
 
-## 14. Integration Checklist
+## 15. Integration Checklist
 
 When integrating Tenjin into a Flutter project, verify these items:
 
-- [ ] **SDK version** is the latest from [pub.dev](https://pub.dev/packages/tenjin_plugin)
+- [ ] **SDK version** was resolved by `flutter pub add` or the pub.dev command in this guide, not from memory
+- [ ] **The import** is `package:tenjin_plugin/tenjin_sdk.dart`
+- [ ] **`initialize(sdkKey:)`** is used, not the deprecated `init(apiKey:)`
+- [ ] **Two SDK keys**, selected with `Platform.isAndroid` / `Platform.isIOS`, each belonging to the Tenjin app with that platform's bundle ID; placeholders are replaced
 - [ ] **iOS Info.plist** has `NSUserTrackingUsageDescription` with a user-facing message
 - [ ] **iOS Info.plist** has `NSAdvertisingAttributionReportEndpoint` set to `https://tenjin-skan.com`
-- [ ] **Android Manifest** has `INTERNET` and `ACCESS_NETWORK_STATE` permissions
-- [ ] **Android Manifest** has `AD_ID` permission for Android 13+
-- [ ] **ATT prompt** is requested before calling `connect()` on iOS 14+
-- [ ] **`connect()`** is called on every app launch, not just first launch
-- [ ] **`registerAppForAdNetworkAttribution()`** is called on iOS
+- [ ] **iOS Podfile** platform is 12.0 or higher
+- [ ] **Android Manifest** has `INTERNET`, `ACCESS_NETWORK_STATE` and `AD_ID` permissions and the `TENJIN_APP_STORE` meta-data
+- [ ] **Android `minSdk`** is 21 or higher
+- [ ] **ProGuard rules** are added (Flutter release builds are minified)
+- [ ] **The ATT prompt** is requested once, when the app is active, before `connect()` on iOS
+- [ ] **`connect()`** is called on every launch and every resume
 - [ ] **Custom events** are only sent after `connect()` has been called
-- [ ] **`<SDK_KEY>`** placeholder is replaced with the actual key from the Tenjin dashboard
-- [ ] **ProGuard rules** are added if using Android code obfuscation
+- [ ] **Both platforms** show a 200 / `"success":true` response in the device log
 - [ ] Integration is verified using the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics)
 
 ---
 
-## 15. Common Mistakes to Avoid
+## 16. Common Mistakes to Avoid
 
 | Mistake | Why It Matters | Fix |
 |---------|---------------|-----|
-| Calling `connect()` only on first launch | Tenjin needs session data on every launch; accounts may be suspended | Call `connect()` in your app initialization on every launch |
-| Calling `connect()` before ATT request | IDFA will be zeros, degrading attribution quality | Call `requestTrackingAuthorization()` first, then `connect()` |
+| Importing `package:tenjin_plugin/tenjin_plugin.dart` | That file does not exist; the build fails | Import `package:tenjin_plugin/tenjin_sdk.dart` |
+| Using an SDK version from memory | It is usually many releases old and lacks the APIs in this guide | Use `flutter pub add tenjin_plugin` or the pub.dev command |
+| One SDK key for both platforms | Each platform is a separate Tenjin app; the wrong key gets `unauthorized` | Select the key with `Platform.isAndroid` |
+| Verifying on one platform only | The other platform uses a different key and app | Check the device log on iOS and on Android |
+| Using `init(apiKey:)` | Deprecated | Use `initialize(sdkKey:)` |
+| Requesting ATT in `main()` before the first frame | The prompt only shows while the app is active and may be skipped | Request it after the first frame or on `resumed` |
+| Adding a second ATT prompt | The app already asks elsewhere | Call `connect()` after the existing request |
+| Calling `connect()` before the ATT request | IDFA will be zeros, degrading attribution quality | Call `requestTrackingAuthorization()` first, then `connect()` |
+| Calling `connect()` only on first launch | Tenjin needs session data on every launch; accounts may be suspended | Call `connect()` on every launch and resume |
+| Missing `AD_ID` permission on Android | No advertising ID: requests are rejected with `invalid device identifier` | Add the permission to AndroidManifest.xml |
+| Missing ProGuard rules | Release builds fail at runtime only | Add the rules from Section 3 |
+| Calling `subscription()` on iOS without all four `ios*` parameters | The call is dropped | Pass all four, or use `subscriptionWithStoreKit()` |
 | Sending events before `connect()` | Events will not be processed | Always call `connect()` first |
-| Missing `AD_ID` permission on Android | Cannot access AAID on Android 13+, degrades attribution quality | Add the permission to AndroidManifest.xml |
-| Not calling `registerAppForAdNetworkAttribution()` | SKAdNetwork postbacks won't work | Call it during iOS initialization |
 | Event names over 80 characters | Will be rejected | Keep event names concise |
 | Exceeding 500 unique event names | Additional events will be dropped | Reuse event names with different values |
 | Sending AdMob `value_micros` without platform branching | iOS reads it as currency units, Android as micros; revenue is off by 1,000,000x | Divide `adValue.valueMicros` by 1,000,000 on iOS only |
-| Sending subscription transactions during trial | Inflates revenue metrics | Only send at first charge and renewals |
-| Missing `developer_device_id` in opt-in params | Events will not be processed | Always include `developer_device_id` in `optInParams` |
+| Relaunching within 30 seconds while testing | The native SDK skips the second `connect()` and sends nothing | Wait 30 seconds, or clear app data / reinstall |
 
 ---
 
-## 16. Full API Reference
+## 17. Full API Reference
+
+All methods are on `TenjinSDK.instance`.
 
 ### Initialization
 
 | Method | Purpose |
 |--------|---------|
-| `init(apiKey:)` | Initialize SDK with API key |
+| `initialize(sdkKey:)` | Initialize SDK with the SDK key |
 | `connect()` | Send install/session data to Tenjin |
-| `registerAppForAdNetworkAttribution()` | Register for SKAdNetwork (iOS only) |
-| `requestTrackingAuthorization()` | Request ATT permission (iOS only) |
+| `requestTrackingAuthorization()` | Request ATT permission (iOS; returns `true` on Android) |
+| `registerAppForAdNetworkAttribution()` | Register for SKAdNetwork (iOS 14.0-15.3; no effect on newer iOS or Android) |
 
 ### Events & Revenue
 
@@ -636,9 +844,10 @@ When integrating Tenjin into a Flutter project, verify these items:
 |--------|---------|
 | `eventWithName(String)` | Custom event (name only) |
 | `eventWithNameAndValue(String, int)` | Custom event with integer value |
-| `transaction(...)` | Manual revenue tracking |
+| `transaction(String, String, double, double)` | Manual revenue tracking |
 | `transactionWithReceipt(...)` | Purchase with receipt validation |
 | `subscription(...)` | Subscription tracking with full transaction data |
+| `subscriptionWithStoreKit(...)` | iOS-only native StoreKit 2 subscription fetch |
 
 ### SKAdNetwork (iOS)
 
@@ -668,6 +877,7 @@ When integrating Tenjin into a Flutter project, verify these items:
 | `eventAdImpressionTopOn(Map)` | TopOn impression |
 | `eventAdImpressionHyperBid(Map)` | HyperBid impression |
 | `eventAdImpressionTradPlus(Map)` | TradPlus impression |
+| `eventAdImpressionTradPlusAdInfo(Map)` | TradPlus impression from TradPlus's adInfo map |
 
 ### Identity & Analytics
 
@@ -677,6 +887,9 @@ When integrating Tenjin into a Flutter project, verify these items:
 | `getCustomerUserId()` | Retrieve stored user ID |
 | `getAnalyticsInstallationId()` | Get persistent local analytics ID |
 | `getAttributionInfo()` | Get attribution data (paid feature) |
+| `handleOpenUrl(String)` | Report an app-open deep link |
+| `getUserProfileDictionary()` | Get user metrics as a map |
+| `resetUserProfile()` | Clear all local profile data |
 
 ### Configuration
 
@@ -688,7 +901,7 @@ When integrating Tenjin into a Flutter project, verify these items:
 
 ---
 
-## 17. How to Use This Document
+## 18. How to Use This Document
 
 **With any LLM:**
 
@@ -699,4 +912,4 @@ https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/flutter/llm-
 
 **Keeping this document up to date:**
 
-This guide is derived from the official [README.md](https://github.com/tenjin/tenjin-flutter-sdk/blob/master/README.md) and the public API in [tenjin_sdk.dart](https://github.com/tenjin/tenjin-flutter-sdk/blob/master/lib/tenjin_sdk.dart). When the SDK is updated, review those sources and update this file accordingly.
+This guide is derived from the official [README.md](https://github.com/tenjin/flutter-sdk/blob/main/README.md) and the public API in [tenjin_sdk.dart](https://github.com/tenjin/flutter-sdk/blob/main/lib/tenjin_sdk.dart). When the SDK is updated, review those sources and update this file accordingly.

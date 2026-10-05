@@ -73,8 +73,11 @@ When adding a new platform guide:
 1. Create `guides/{platform}/llm-guide.md`
 2. Add platform detection hints to `guides/llm-guide.md`
 3. Keep guides self-contained
-4. Don't hardcode SDK versions — check latest release
+4. Don't hardcode SDK versions, and don't write "use the latest" either: give the exact command or URL that returns the current version
 5. Include code examples, checklist, common mistakes
+6. Include the sections every guide has: one app and one SDK key per platform, where `connect()` goes, and how to verify from the device log
+
+See [`AGENTS.md`](AGENTS.md) for the full conventions.
 
 ## Resources
 
@@ -83,4 +86,5 @@ When adding a new platform guide:
 - [Tenjin Flutter SDK](https://github.com/tenjin/flutter-sdk)
 - [Tenjin Ionic SDK](https://github.com/tenjin/tenjin-ionic-sdk)
 - [Tenjin React Native SDK](https://github.com/tenjin/tenjin-react-native-sdk)
+- [Tenjin Unity SDK](https://github.com/tenjin/tenjin-unity-sdk)
 - [Tenjin Documentation](https://docs.tenjin.com/)
