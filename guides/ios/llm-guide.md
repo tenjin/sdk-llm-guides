@@ -66,6 +66,7 @@ Follow this two-step approach:
 > - **Deep links** — deferred deep links and app-open deep links (Section 9)
 > - **Ad revenue (ILRD)** — impression-level revenue from ad networks (Section 10, paid feature)
 > - **User identity & analytics** — customer user IDs, user profile data (Section 11)
+> - **Google Ads conversion measurement (ICM / ODM)** — iOS only, for apps that run Google Ads campaigns (Section 13)
 
 Only implement the sections the developer requests. Do not add features they didn't ask for.
 
@@ -774,7 +775,119 @@ The setting is stored on the device. Removing the call in a later release does n
 
 ---
 
-## 13. Integration Checklist
+## 13. Google Ads On-Device Conversion Measurement (ICM / ODM)
+
+> **Only for apps that run Google Ads campaigns for this iOS app.** Before adding anything, ask the developer:
+>
+> "Do you run Google Ads (App campaigns) for your iOS app?"
+>
+> Ad spend cannot be seen in the project, so do not guess. If the answer is no, or they are not sure, skip this section: do not add Google's SDK and do not add the connect delay.
+
+Google calls this Integrated Conversion Measurement (ICM). It relies on Google's on-device conversion measurement (ODM) SDK, `GoogleAdsOnDeviceConversion`, and is iOS only.
+
+The Tenjin iOS SDK (1.14.8 or newer) uses it by itself once Google's SDK is in the app: when the Tenjin SDK is initialized it asks Google's SDK for the install's conversion data, stores it, and sends it with its requests. There is no Tenjin method to call. Two things are needed:
+
+1. Google's SDK in the iOS app.
+2. A short delay before the first `connect()`, so Google's SDK has time to produce the data.
+
+### Add Google's SDK
+
+**Check first whether it is already there.** Firebase Analytics depends on Google's SDK, so apps that use Firebase Analytics already have it. Look for `GoogleAdsOnDeviceConversion` in `Podfile.lock` (CocoaPods) or `Package.resolved` (Swift Package Manager). If it is listed, do not add it again (a second, different version can break `pod install`); go straight to the delay below. If you add it to a project that also has Firebase Analytics, use the version Google pairs with that Firebase version: see the [version mapping table](https://github.com/googleads/google-ads-on-device-conversion-ios-sdk#version-mapping-with-ga4f-sdk).
+
+Resolve the version of Google's SDK the same way as Tenjin's, and use it wherever a snippet says `<GOOGLE_ODM_VERSION>`:
+
+```bash
+curl -s https://trunk.cocoapods.org/api/v1/pods/GoogleAdsOnDeviceConversion | grep -o '"name":"[0-9.]*"' | cut -d'"' -f4 | sort -V | tail -1
+```
+
+CocoaPods, in the app target of the `Podfile`, then `pod install`:
+
+```ruby
+pod 'GoogleAdsOnDeviceConversion', '~> <GOOGLE_ODM_VERSION>'
+```
+
+Swift Package Manager: add `https://github.com/googleads/google-ads-on-device-conversion-ios-sdk` with "Up to Next Major Version" from `<GOOGLE_ODM_VERSION>`, and add the `GoogleAdsOnDeviceConversion` product to the app target.
+
+### Delay the First connect()
+
+Google's SDK starts working when the Tenjin SDK is initialized and usually needs under a second. Make the **first** `connect()` of each app run happen at least 3 seconds after initialization; later connects (returns to the foreground) need no delay. Waiting for the tracking prompt often provides this already, but not when the user answered it on an earlier launch or tracking is disabled on the device, so add the delay explicitly. Do it on iOS only.
+
+Add this helper to the app:
+
+```swift
+import Foundation
+import TenjinSDK
+
+/// Initializes Tenjin and holds back the first connect() of each app run until
+/// Google's on-device conversion SDK has had 3 seconds to produce its data.
+enum TenjinConnectGate {
+    // Only read and written on the main queue.
+    nonisolated(unsafe) private static var initializedAt = Date()
+    nonisolated(unsafe) private static var connectedOnce = false
+
+    /// Call on the main thread, where the integration creates the SDK instance.
+    static func initialize(sdkKey: String) {
+        TenjinSDK.getInstance(sdkKey)
+        initializedAt = Date()
+    }
+
+    /// Safe to call from any thread, for example from an ATT completion handler.
+    static func connect() {
+        DispatchQueue.main.async {
+            let wait = connectedOnce ? 0 : max(0, 3 - Date().timeIntervalSince(initializedAt))
+            connectedOnce = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + wait) {
+                TenjinSDK.connect()
+            }
+        }
+    }
+}
+```
+
+Then, in the integration from Section 3, call `TenjinConnectGate.initialize(sdkKey:)` instead of `TenjinSDK.getInstance(_:)`, and `TenjinConnectGate.connect()` everywhere it calls `TenjinSDK.connect()`:
+
+```swift
+TenjinConnectGate.initialize(sdkKey: "<SDK_KEY>")
+
+if #available(iOS 14, *) {
+    ATTrackingManager.requestTrackingAuthorization { _ in
+        TenjinConnectGate.connect()
+    }
+} else {
+    TenjinConnectGate.connect()
+}
+```
+
+In Objective-C:
+
+```objectivec
+static NSDate *tenjinInitializedAt;
+static BOOL tenjinConnectedOnce = NO;
+
+static void TenjinInitializeWithGate(NSString *sdkKey) {
+    [TenjinSDK initialize:sdkKey];
+    tenjinInitializedAt = [NSDate date];
+}
+
+// Safe to call from any thread, for example from an ATT completion handler.
+static void TenjinConnectWithGate(void) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSTimeInterval elapsed = -[tenjinInitializedAt timeIntervalSinceNow];
+        NSTimeInterval wait = tenjinConnectedOnce ? 0 : MAX(0, 3 - elapsed);
+        tenjinConnectedOnce = YES;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(wait * NSEC_PER_SEC)),
+                       dispatch_get_main_queue(), ^{
+            [TenjinSDK connect];
+        });
+    });
+}
+```
+
+**Verify.** Confirm `GoogleAdsOnDeviceConversion` appears in `Podfile.lock` or `Package.resolved` after installing. When Google's SDK returns data, the first `connect()` of a fresh install carries it as `omd_info`: with iOS debug logs on (Section 4), the `request body` line contains `omd_info=`. The data is fetched once per install, so reinstall the app to test again.
+
+---
+
+## 14. Integration Checklist
 
 When integrating Tenjin into an iOS project, verify these items:
 
@@ -789,11 +902,12 @@ When integrating Tenjin into an iOS project, verify these items:
 - [ ] **Custom events** are only sent after `connect()` has been called
 - [ ] **The console** shows `[Tenjin] - LOG: Got http response 200` with debug logs on
 - [ ] **Debug logs** are disabled in production builds
+- [ ] **Google ICM / ODM** (only if the app runs Google Ads campaigns on iOS): `GoogleAdsOnDeviceConversion` is in the app once, and the first `connect()` of each run comes at least 3 seconds after initialization
 - [ ] Integration is verified using the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics)
 
 ---
 
-## 14. Common Mistakes to Avoid
+## 15. Common Mistakes to Avoid
 
 | Mistake | Why It Matters | Fix |
 |---------|---------------|-----|
@@ -816,10 +930,13 @@ When integrating Tenjin into an iOS project, verify these items:
 | Dividing AdMob `value_micros` by 1,000,000 before sending | iOS expects currency units, which `GADAdValue.value` already returns; dividing reports 1,000,000x too little | Send `GADAdValue.value` as-is, or use `handleAdMobILRD:` |
 | Sending subscription transactions during trial | Inflates revenue metrics | Only send at first charge and renewals |
 | Missing `developer_device_id` in opt-in params | Events will not be processed | Always include `developer_device_id` in `optInParams` |
+| Adding Google's on-device conversion SDK to an app that does not run Google Ads | An unneeded dependency and a delayed first connect for nothing | Ask the developer first; skip the section if they do not run Google Ads on iOS |
+| Adding `GoogleAdsOnDeviceConversion` when Firebase Analytics already brings it | Two version requirements for one pod; `pod install` can fail | Check the lockfile first; if adding it next to Firebase, use Google's version mapping |
+| First `connect()` right after initialization in an app with Google's ODM SDK | Google's data is not ready yet, so the first open is sent without it | Make the first `connect()` of each run at least 3 seconds after initialization (iOS only) |
 
 ---
 
-## 15. Full API Reference
+## 16. Full API Reference
 
 Objective-C selectors of `TenjinSDK`. All are class methods unless marked (instance).
 
@@ -888,7 +1005,7 @@ Objective-C selectors of `TenjinSDK`. All are class methods unless marked (insta
 
 ---
 
-## 16. How to Use This Document
+## 17. How to Use This Document
 
 **With any LLM:**
 
