@@ -73,6 +73,7 @@ Follow this two-step approach:
 > - **Attribution info & deep links** — LiveOps attribution data, re-engagement deep links (Section 10)
 > - **Ad revenue (ILRD)** — impression-level revenue from ad networks (Section 11, paid feature)
 > - **User identity & analytics** — customer user IDs, analytics IDs, user profile (Section 12)
+> - **Google Ads conversion measurement (ICM / ODM)** — iOS only, for apps that run Google Ads campaigns (Section 14)
 
 Only implement the sections the developer requests. Do not add features they didn't ask for.
 
@@ -772,7 +773,92 @@ The setting is stored on the device. Removing the call in a later release does n
 
 ---
 
-## 14. Integration Checklist
+## 14. Google Ads On-Device Conversion Measurement (ICM / ODM, iOS Only)
+
+> **Only for apps that run Google Ads campaigns for this iOS app.** Before adding anything, ask the developer:
+>
+> "Do you run Google Ads (App campaigns) for your iOS app?"
+>
+> Ad spend cannot be seen in the project, so do not guess. If the answer is no, or they are not sure, skip this section: do not add Google's SDK and do not add the connect delay.
+
+Google calls this Integrated Conversion Measurement (ICM). It relies on Google's on-device conversion measurement (ODM) SDK, `GoogleAdsOnDeviceConversion`, and is iOS only.
+
+The Tenjin iOS SDK (1.14.8 or newer) uses it by itself once Google's SDK is in the app: when the Tenjin SDK is initialized it asks Google's SDK for the install's conversion data, stores it, and sends it with its requests. There is no Tenjin method to call. `react-native-tenjin` uses the native iOS SDK, so this works without any JavaScript call. Two things are needed:
+
+1. Google's SDK in the iOS app.
+2. A short delay before the first `connect()`, so Google's SDK has time to produce the data.
+
+### Add Google's SDK
+
+**Check first whether it is already there.** Firebase Analytics depends on Google's SDK, so apps that use `@react-native-firebase/analytics` already have it. Look for `GoogleAdsOnDeviceConversion` in `ios/Podfile.lock`. If it is listed, do not add it again (a second, different version can break `pod install`); go straight to the delay below. If you add it to a project that also has Firebase Analytics, use the version Google pairs with that Firebase version: see the [version mapping table](https://github.com/googleads/google-ads-on-device-conversion-ios-sdk#version-mapping-with-ga4f-sdk).
+
+Resolve the version of Google's SDK the same way as Tenjin's, and use it wherever a snippet says `<GOOGLE_ODM_VERSION>`:
+
+```bash
+curl -s https://trunk.cocoapods.org/api/v1/pods/GoogleAdsOnDeviceConversion | grep -o '"name":"[0-9.]*"' | cut -d'"' -f4 | sort -V | tail -1
+```
+
+**Bare React Native:** in `ios/Podfile`, inside the app's `target '<YourApp>' do` block, add the pod, then run `cd ios && pod install`:
+
+```ruby
+pod 'GoogleAdsOnDeviceConversion', '~> <GOOGLE_ODM_VERSION>'
+```
+
+**Expo:** the Podfile is generated, so add the pod through the `expo-build-properties` plugin in `app.json` (merge it into the existing entry if the project already has one), then run `npx expo prebuild` again:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              { "name": "GoogleAdsOnDeviceConversion", "version": "~> <GOOGLE_ODM_VERSION>" }
+            ]
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+### Delay the First connect()
+
+Google's SDK starts working when the Tenjin SDK is initialized and usually needs under a second. Make the **first** `connect()` of each app run happen at least 3 seconds after initialization; later connects (returns to the foreground) need no delay. Waiting for the tracking prompt often provides this already, but not when the user answered it on an earlier launch or tracking is disabled on the device, so add the delay explicitly. Do it on iOS only.
+
+In the `connectTenjin()` function from Section 4, record when the SDK was initialized and wait before the first connect:
+
+```javascript
+let initializedAt = 0;
+let connectedOnce = false;
+
+// The first connect() of each app run on iOS waits until 3 seconds after
+// initialize(), so Google's on-device conversion SDK can produce its data.
+async function waitForGoogleOnDeviceConversion() {
+  if (Platform.OS !== 'ios' || connectedOnce) return;
+  connectedOnce = true;
+  const remaining = 3000 - (Date.now() - initializedAt);
+  if (remaining > 0) {
+    await new Promise((resolve) => setTimeout(resolve, remaining));
+  }
+}
+```
+
+Set `initializedAt = Date.now();` right after `Tenjin.initialize(TENJIN_SDK_KEY);`, and call the helper just before connecting:
+
+```javascript
+await waitForGoogleOnDeviceConversion();
+Tenjin.connect();
+```
+
+**Verify.** Confirm `GoogleAdsOnDeviceConversion` appears in `ios/Podfile.lock` after installing. When Google's SDK returns data, the first `connect()` of a fresh install carries it as `omd_info`: with iOS debug logs on (Section 5), the `request body` line contains `omd_info=`. The data is fetched once per install, so reinstall the app to test again.
+
+---
+
+## 15. Integration Checklist
 
 When integrating Tenjin into a React Native project, verify these items:
 
@@ -789,11 +875,12 @@ When integrating Tenjin into a React Native project, verify these items:
 - [ ] **Custom events** are only sent after `connect()` has been called
 - [ ] **ProGuard rules** are added if the Android release build is minified
 - [ ] **Both platforms** show a 200 / `"success":true` response in the device log
+- [ ] **Google ICM / ODM** (only if the app runs Google Ads campaigns on iOS): `GoogleAdsOnDeviceConversion` is in the app once, and the first `connect()` of each run comes at least 3 seconds after initialization
 - [ ] Integration is verified using the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics)
 
 ---
 
-## 15. Common Mistakes to Avoid
+## 16. Common Mistakes to Avoid
 
 | Mistake | Why It Matters | Fix |
 |---------|---------------|-----|
@@ -814,10 +901,13 @@ When integrating Tenjin into a React Native project, verify these items:
 | Exceeding 500 unique event names | Additional events will be dropped | Reuse event names with different values |
 | Sending AdMob `value_micros` without platform branching | iOS reads it as currency units, Android as micros; revenue is off by 1,000,000x | Divide the micros value by 1,000,000 on iOS only |
 | Relaunching within 30 seconds while testing | The native SDK skips the second `connect()` and sends nothing | Wait 30 seconds, or clear app data / reinstall |
+| Adding Google's on-device conversion SDK to an app that does not run Google Ads | An unneeded dependency and a delayed first connect for nothing | Ask the developer first; skip the section if they do not run Google Ads on iOS |
+| Adding `GoogleAdsOnDeviceConversion` when Firebase Analytics already brings it | Two version requirements for one pod; `pod install` can fail | Check the lockfile first; if adding it next to Firebase, use Google's version mapping |
+| First `connect()` right after initialization in an app with Google's ODM SDK | Google's data is not ready yet, so the first open is sent without it | Make the first `connect()` of each run at least 3 seconds after initialization (iOS only) |
 
 ---
 
-## 16. Full API Reference
+## 17. Full API Reference
 
 All methods are on the default export `Tenjin`.
 
@@ -891,7 +981,7 @@ All methods are on the default export `Tenjin`.
 
 ---
 
-## 17. How to Use This Document
+## 18. How to Use This Document
 
 **With any LLM:**
 

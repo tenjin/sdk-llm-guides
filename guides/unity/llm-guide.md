@@ -63,6 +63,7 @@ Follow this two-step approach:
 > - **Attribution info & deep links** — LiveOps attribution data, re-engagement deep links (Section 9)
 > - **Ad revenue (ILRD)** — impression-level revenue from ad networks (Section 10, paid feature)
 > - **User identity & analytics** — customer user IDs, user profile data (Section 11)
+> - **Google Ads conversion measurement (ICM / ODM)** — iOS only, for apps that run Google Ads campaigns (Section 13)
 
 Only implement the sections the developer requests. Do not add features they didn't ask for.
 
@@ -663,7 +664,89 @@ instance.SetEncryptRequestsSetting(true);
 
 ---
 
-## 13. Integration Checklist
+## 13. Google Ads On-Device Conversion Measurement (ICM / ODM, iOS Only)
+
+> **Only for apps that run Google Ads campaigns for this iOS app.** Before adding anything, ask the developer:
+>
+> "Do you run Google Ads (App campaigns) for your iOS app?"
+>
+> Ad spend cannot be seen in the project, so do not guess. If the answer is no, or they are not sure, skip this section: do not add Google's SDK and do not add the connect delay.
+
+Google calls this Integrated Conversion Measurement (ICM). It relies on Google's on-device conversion measurement (ODM) SDK, `GoogleAdsOnDeviceConversion`, and is iOS only.
+
+The Tenjin iOS SDK (1.14.8 or newer) uses it by itself once Google's SDK is in the app: when the Tenjin SDK is initialized it asks Google's SDK for the install's conversion data, stores it, and sends it with its requests. There is no Tenjin method to call. The Unity package uses the native iOS SDK, so this works without any C# call. Two things are needed:
+
+1. Google's SDK in the iOS app.
+2. A short delay before the first `connect()`, so Google's SDK has time to produce the data.
+
+### Add Google's SDK
+
+**Check first whether it is already there.** Firebase Analytics depends on Google's SDK, so apps that use the Firebase Analytics Unity SDK already have it. Look for `GoogleAdsOnDeviceConversion` in the `Podfile.lock` of the exported Xcode project. If it is listed, do not add it again (a second, different version can break `pod install`); go straight to the delay below. If you add it to a project that also has Firebase Analytics, use the version Google pairs with that Firebase version: see the [version mapping table](https://github.com/googleads/google-ads-on-device-conversion-ios-sdk#version-mapping-with-ga4f-sdk).
+
+Resolve the version of Google's SDK the same way as Tenjin's, and use it wherever a snippet says `<GOOGLE_ODM_VERSION>`:
+
+```bash
+curl -s https://trunk.cocoapods.org/api/v1/pods/GoogleAdsOnDeviceConversion | grep -o '"name":"[0-9.]*"' | cut -d'"' -f4 | sort -V | tail -1
+```
+
+Add a **new** file, `Assets/Editor/GoogleAdsOnDeviceConversionDependencies.xml`. Do not edit the Tenjin package's own `Dependencies.xml`: with the Unity Package Manager it is read-only, and replacing it would also change the Tenjin Android SDK version.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<dependencies>
+  <iosPods>
+    <iosPod name="GoogleAdsOnDeviceConversion" version="~> <GOOGLE_ODM_VERSION>" />
+  </iosPods>
+</dependencies>
+```
+
+EDM4U picks the file up and adds the pod to the Xcode project's `Podfile` on the next iOS build (its iOS Resolver settings control how CocoaPods is integrated). Open the generated `.xcworkspace`, not the `.xcodeproj`.
+
+### Delay the First Connect()
+
+Google's SDK starts working when the Tenjin SDK is initialized and usually needs under a second. Make the **first** `Connect()` of each app run happen at least 3 seconds after initialization; later connects (returns to the foreground) need no delay. Waiting for the tracking prompt often provides this already, but not when the user answered it on an earlier launch or tracking is disabled on the device, so add the delay explicitly. Do it on iOS only.
+
+In the `TenjinManager` from Section 3, add these members:
+
+```csharp
+private float tenjinInitializedAt = -1f;
+private bool tenjinConnectedOnce;
+
+// The first Connect() of each app run on iOS waits until 3 seconds after the
+// SDK was initialized, so Google's on-device conversion SDK can produce its data.
+private IEnumerator ConnectAfterGoogleOnDeviceConversion(BaseTenjin instance)
+{
+    if (!tenjinConnectedOnce)
+    {
+        tenjinConnectedOnce = true;
+        float remaining = 3f - (Time.realtimeSinceStartup - tenjinInitializedAt);
+        if (remaining > 0f)
+        {
+            yield return new WaitForSecondsRealtime(remaining);
+        }
+    }
+    instance.Connect();
+}
+```
+
+Add `using System.Collections;` at the top of the file. In `TenjinConnect()`, record the time right after `Tenjin.getInstance(SdkKey)`, and in the iOS branch start the coroutine instead of calling `instance.Connect()` directly:
+
+```csharp
+BaseTenjin instance = Tenjin.getInstance(SdkKey);
+if (tenjinInitializedAt < 0f)
+{
+    tenjinInitializedAt = Time.realtimeSinceStartup;
+}
+
+// iOS branch, inside the tracking callback and in the pre-iOS 14 branch:
+StartCoroutine(ConnectAfterGoogleOnDeviceConversion(instance));
+```
+
+**Verify.** Confirm `GoogleAdsOnDeviceConversion` appears in the exported Xcode project's `Podfile.lock` after installing. When Google's SDK returns data, the first `Connect()` of a fresh install carries it as `omd_info`: with iOS debug logs on (Section 4), the `request body` line contains `omd_info=`. The data is fetched once per install, so reinstall the app to test again.
+
+---
+
+## 14. Integration Checklist
 
 When integrating Tenjin into a Unity project, verify these items:
 
@@ -678,11 +761,12 @@ When integrating Tenjin into a Unity project, verify these items:
 - [ ] **`Connect()`** is called in `Start()` and again in `OnApplicationPause(false)`
 - [ ] **Custom events** are only sent after `Connect()` has been called
 - [ ] **A device build on each platform** shows a 200 / `"success":true` response in the device log (the Editor sends nothing)
+- [ ] **Google ICM / ODM** (only if the app runs Google Ads campaigns on iOS): `GoogleAdsOnDeviceConversion` is in the app once, and the first `Connect()` of each run comes at least 3 seconds after initialization
 - [ ] Integration is verified using the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics)
 
 ---
 
-## 14. Common Mistakes to Avoid
+## 15. Common Mistakes to Avoid
 
 | Mistake | Why It Matters | Fix |
 |---------|---------------|-----|
@@ -700,10 +784,13 @@ When integrating Tenjin into a Unity project, verify these items:
 | `instance.updatePostbackConversionValue(...)` | C# method names start with a capital letter | `UpdatePostbackConversionValue` |
 | Sending events before `Connect()` | Events will not be processed | Always call `Connect()` first |
 | Relaunching within 30 seconds while testing | The native SDK skips the second `Connect()` and sends nothing | Wait 30 seconds, or clear app data / reinstall |
+| Adding Google's on-device conversion SDK to an app that does not run Google Ads | An unneeded dependency and a delayed first connect for nothing | Ask the developer first; skip the section if they do not run Google Ads on iOS |
+| Adding `GoogleAdsOnDeviceConversion` when Firebase Analytics already brings it | Two version requirements for one pod; `pod install` can fail | Check the lockfile first; if adding it next to Firebase, use Google's version mapping |
+| First `Connect()` right after initialization in an app with Google's ODM SDK | Google's data is not ready yet, so the first open is sent without it | Make the first `Connect()` of each run at least 3 seconds after initialization (iOS only) |
 
 ---
 
-## 15. Full API Reference
+## 16. Full API Reference
 
 `Tenjin.getInstance(string sdkKey)` returns a `BaseTenjin`. All methods below are on that instance.
 
@@ -787,7 +874,7 @@ When integrating Tenjin into a Unity project, verify these items:
 
 ---
 
-## 16. How to Use This Document
+## 17. How to Use This Document
 
 **With any LLM:**
 
