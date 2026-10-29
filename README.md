@@ -25,6 +25,7 @@ Use a platform-specific guide directly:
 | Ionic | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ionic/llm-guide.md` |
 | React Native | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/react-native/llm-guide.md` |
 | Unity | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/unity/llm-guide.md` |
+| Godot | `https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/godot/llm-guide.md` |
 
 ```
 Add Tenjin SDK to my project using: <url-from-table>
@@ -53,8 +54,10 @@ guides/
 │   └── llm-guide.md      # Ionic (Capacitor) integration guide
 ├── react-native/
 │   └── llm-guide.md      # React Native integration guide
-└── unity/
-    └── llm-guide.md      # Unity integration guide
+├── unity/
+│   └── llm-guide.md      # Unity integration guide
+└── godot/
+    └── llm-guide.md      # Godot integration guide
 ```
 
 ## For LLMs
@@ -87,4 +90,5 @@ See [`AGENTS.md`](AGENTS.md) for the full conventions.
 - [Tenjin Ionic SDK](https://github.com/tenjin/tenjin-ionic-sdk)
 - [Tenjin React Native SDK](https://github.com/tenjin/tenjin-react-native-sdk)
 - [Tenjin Unity SDK](https://github.com/tenjin/tenjin-unity-sdk)
+- [Tenjin Godot SDK](https://github.com/tenjin/tenjin-godot-sdk)
 - [Tenjin Documentation](https://docs.tenjin.com/)

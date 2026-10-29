@@ -15,6 +15,7 @@ A Tenjin app is one bundle ID on one platform, so a project that ships on iOS an
 - [Ionic](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/ionic/llm-guide.md): Capacitor plugin integration via ionic-capacitor-tenjin on npm
 - [React Native](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/react-native/llm-guide.md): integration via react-native-tenjin on npm, for bare and Expo projects
 - [Unity](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/unity/llm-guide.md): C# integration for Unity projects via the Unity Package Manager
+- [Godot](https://raw.githubusercontent.com/tenjin/sdk-llm-guides/main/guides/godot/llm-guide.md): GDScript integration for Godot 4.3+ games via the tenjin-godot-sdk addon
 
 ## Optional
 
@@ -25,3 +26,4 @@ A Tenjin app is one bundle ID on one platform, so a project that ships on iOS an
 - [Tenjin React Native SDK repository](https://github.com/tenjin/tenjin-react-native-sdk)
 - [Tenjin Ionic SDK repository](https://github.com/tenjin/tenjin-ionic-sdk)
 - [Tenjin Unity SDK repository](https://github.com/tenjin/tenjin-unity-sdk)
+- [Tenjin Godot SDK repository](https://github.com/tenjin/tenjin-godot-sdk)
