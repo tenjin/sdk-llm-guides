@@ -1,6 +1,6 @@
 ---
 name: tenjin-godot
-description: Integrate the Tenjin SDK (mobile attribution and analytics) into a Godot 4 game. Use when the user asks to add, install, update, or debug the Tenjin SDK in this kind of project.
+description: Integrate the Tenjin SDK (mobile attribution and analytics) into a Godot 4.3+ game. Use when the user asks to add, install, update, or debug the Tenjin SDK in this kind of project.
 ---
 
 # Tenjin SDK integration (godot)

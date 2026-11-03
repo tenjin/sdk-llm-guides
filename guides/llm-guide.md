@@ -18,7 +18,9 @@ Go down this table in order and stop at the first match:
 | 6 | iOS | `*.xcodeproj` or `*.xcworkspace`, and none of the above |
 | 7 | Android | `settings.gradle` or `settings.gradle.kts` with a module that applies `com.android.application`, and none of the above |
 
-Not supported: a Cordova project (`config.xml` with a `<widget>` element and no Capacitor), and a Godot 3 project (`config_version=4` in `project.godot`). Tell the user instead of improvising.
+Not supported: a Cordova project (`config.xml` with a `<widget>` element and no Capacitor), and a Godot project older than 4.3 (`config_version=4` in `project.godot` is Godot 3; for Godot 4, `config/features` names the version). For Godot 4.0 to 4.2, ask the user to upgrade the project to 4.3 or newer first. Tell the user instead of improvising.
+
+A Godot .NET (C#) project is supported: follow the Godot guide as is. The Tenjin addon and its autoload are GDScript, which runs in .NET projects too, so do not write C# bindings.
 
 If the folder is an exported build (for example an Xcode or Gradle project that Unity or Godot generated), do not integrate there: the next export overwrites it. Find the source project.
 

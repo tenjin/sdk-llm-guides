@@ -1,8 +1,8 @@
 # Tenjin Godot SDK — Integration Reference for AI Assistants
 
-> **Purpose:** This document is a self-contained technical reference designed for LLMs and AI coding assistants. It provides everything needed to integrate the Tenjin Godot SDK into a Godot 4 project without requiring external documentation lookups, except for the version lookup below.
+> **Purpose:** This document is a self-contained technical reference designed for LLMs and AI coding assistants. It provides everything needed to integrate the Tenjin Godot SDK into a Godot 4.3+ project without requiring external documentation lookups, except for the version lookup below.
 >
-> **Requirements:** Godot 4.3 or newer, exporting to Android and/or iOS. GDScript. The addon does nothing on desktop or Web: every call is a no-op there.
+> **Requirements:** Godot 4.3 or newer, exporting to Android and/or iOS. GDScript, also in Godot .NET projects (the addon is GDScript, so do not write C# bindings). The addon does nothing on desktop or Web: every call is a no-op there.
 >
 > **Sources:**
 > - Repository: [github.com/tenjin/tenjin-godot-sdk](https://github.com/tenjin/tenjin-godot-sdk)
@@ -109,16 +109,16 @@ The addon's export plugin does most of the work on every iOS export:
 - Adds `NSUserTrackingUsageDescription` (the ATT prompt text) to `Info.plist`.
 - Adds Tenjin's `SKAdNetworkItems` to `Info.plist`.
 
-Both are controlled by project settings that the plugin registers (visible in **Project Settings → Tenjin → iOS** with *Advanced Settings* on), stored in `project.godot`:
+The two `Info.plist` items are controlled by project settings that the plugin registers (visible in **Project Settings → Tenjin → iOS** with *Advanced Settings* on), stored in `project.godot`:
 
 ```ini
 [tenjin]
 
-ios/tracking_usage_description="We use this data to provide a better and personalized ad experience."
+ios/tracking_usage_description="This identifier will be used to deliver personalized ads to you."
 ios/add_skadnetwork_ids=true
 ```
 
-Change the description to the text the developer wants on the prompt. Set `add_skadnetwork_ids=false` only if another plugin (usually an ad network SDK) already writes `SKAdNetworkItems`; two writers produce a duplicate key.
+That description is the addon's default. Ask the developer which text they want on the prompt and replace it. Set `add_skadnetwork_ids=false` only if another plugin (usually an ad network SDK) already writes `SKAdNetworkItems`; two writers produce a duplicate key.
 
 One key must be added by hand: **`NSAdvertisingAttributionReportEndpoint`**, so SKAdNetwork postbacks reach Tenjin (iOS 15+). Godot regenerates the Xcode project on every export, so **do not edit `Info.plist` in Xcode**: the change is lost on the next export. Add it to the iOS export preset instead, under **Application → Additional Plist Content**. In `export_presets.cfg`, inside the iOS preset's `[preset.N.options]` section:
 
@@ -157,7 +157,7 @@ Do not add these to `android/build/` by hand. If the project already has another
 - **On every launch and every return to the foreground**, not only on first open. Tenjin needs the session data, and accounts that only connect on first open may be suspended. In Godot, the return to the foreground is `NOTIFICATION_APPLICATION_RESUMED`.
 - **On iOS, after the user has answered the tracking prompt.** Calling `connect_sdk()` before the ATT answer sends a zeroed IDFA and degrades attribution.
 - **Everything that changes the first request goes between `initialize()` and the first `connect_sdk()`:** `set_app_store()`, consent calls (Section 9), `set_cache_event_setting()`, `append_app_subversion()` and `register_deep_link_handler()`.
-- **If the game already has a tracking prompt, hook into it. Do not add a second one.** Search the project for `requestTrackingAuthorization`, `AppTrackingTransparency`, `tracking_authorization` and `att`. If the game already asks through another plugin, call `Tenjin.connect_sdk()` after that plugin reports the answer and leave out `request_tracking_authorization()` below.
+- **If the game already has a tracking prompt, hook into it. Do not add a second one.** Search the project for `requestTrackingAuthorization`, `ATTrackingManager`, `AppTrackingTransparency` and `tracking_authorization`. If the game already asks through another plugin, use [Games That Already Ask for Tracking](#games-that-already-ask-for-tracking) instead of the implementation below.
 
 Calling `connect_sdk()` on every return to the foreground is safe: the native SDKs skip a connect that comes within 30 seconds of the previous one.
 
@@ -213,6 +213,43 @@ TenjinSetup="*res://tenjin_setup.gd"
 ```
 
 If the game already has a boot autoload or a main scene script that runs once at startup, the same code can go there instead of a new autoload, as long as it also handles `NOTIFICATION_APPLICATION_RESUMED`.
+
+### Games That Already Ask for Tracking
+
+If another plugin (a consent manager, an ads SDK) already shows the ATT prompt, keep that single prompt and connect when it reports the answer. Do not only delete the `request_tracking_authorization()` line from the implementation above: the `await` on `tracking_authorization_received` then never returns and `connect_sdk()` never runs. Use this version of `res://tenjin_setup.gd` instead:
+
+```gdscript
+extends Node
+## Starts Tenjin and connects once the game's own ATT prompt has an answer,
+## then on every return to the foreground.
+
+const IOS_SDK_KEY := "<IOS_SDK_KEY>"
+const ANDROID_SDK_KEY := "<ANDROID_SDK_KEY>"
+
+var _tracking_answered := false
+
+
+func _ready() -> void:
+	Tenjin.initialize(IOS_SDK_KEY if OS.get_name() == "iOS" else ANDROID_SDK_KEY)
+	Tenjin.set_app_store(Tenjin.AppStore.GOOGLE_PLAY)  # Android only; GOOGLE_PLAY, AMAZON or OTHER
+	if OS.get_name() == "iOS":
+		# Replace with the signal the existing plugin emits with the ATT answer.
+		ExistingAttPlugin.tracking_answered.connect(_on_tracking_answered)
+	else:
+		_on_tracking_answered()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_RESUMED and _tracking_answered:
+		Tenjin.connect_sdk()
+
+
+func _on_tracking_answered(_status: Variant = null) -> void:
+	_tracking_answered = true
+	Tenjin.connect_sdk()
+```
+
+If the plugin reports the answer through a callback instead of a signal, call `_on_tracking_answered()` from that callback. The game must ask the plugin on every launch (iOS answers at once, without a prompt, once the user has decided), or Tenjin never connects on later launches. Register the autoload as above.
 
 ---
 
@@ -417,9 +454,9 @@ Tenjin.opt_out_google_dma()
 
 ```gdscript
 Tenjin.attribution_info_received.connect(func(info: Dictionary) -> void:
-	var ad_network: String = info.get("ad_network", "")
-	var campaign_id: String = info.get("campaign_id", "")
-	var campaign_name: String = info.get("campaign_name", ""))
+	# Use info here, for example info.get("ad_network", ""), info.get("campaign_id", "")
+	# and info.get("campaign_name", "").
+	print(info))
 Tenjin.attribution_info_failed.connect(func(error: String) -> void: push_warning(error))
 Tenjin.get_attribution_info()
 ```
