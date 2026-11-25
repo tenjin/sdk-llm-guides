@@ -1,3 +1,17 @@
+The diff is to be applied to the guide under strict rules. Analyzing which changes are developer-facing and documented:
+
+- **Version bump** 2.0.2 → 2.1.0 is internal (`DEV_SDK_VERSION`); the guide doesn't cite a version number, so no change.
+- **Logging changes** (the `Log.d` messages in HttpConnection, PlatformParams, referrers, IMEI, OAID, StoreAttribution) change log text. The guide's Section 4 documents the `Tenjin::connect params:` / `Tenjin::connect response:` lines and the example output. Those lines are now gone (replaced by "request sent", "params count", "response length"), so Section 4's "A working integration prints" example and the "Because the label is always..." guidance are now inaccurate and must be updated. The response body is no longer logged, so the "What the Response Means" table's basis (matching response text in Logcat) no longer holds and must be reworked.
+- **5xx retry cap** (`MAX_5XX_RETRIES = 5`) and 5xx now yielding a retryable result with event caching: behaviour the developer can observe; documented in Section 11 caching discussion.
+- **`optOut()` now purges cached events** (`deleteAllEvents`): developer-facing behaviour, relevant to Section 7.
+- **`MetaAnonymousIdParams`** adds `meta_anon_id` and depends on the Meta SDK being consented/initialized: developer-facing for Meta users (Section 2 Meta install referrer area).
+- **`MetaInstallReferrer`** now only trusts providers owned by the official Meta package: behaviour relevant to Meta setup.
+- **GDPR `optIn()` default** now fails closed when `IABTCF_gdprApplies` is 1 and the consent string is missing/malformed: relevant to Section 7 CMP behaviour.
+- **`TJNCertificatePinningHelper`/`HttpConnection`**: pinning context now built regardless of storage path and applied on every attempt; only relevant to `encryptRequests` (not documented in the guide's public API section beyond `setEncryptRequestsSetting`), so no explicit change is required.
+- **`setCustomerUserId` log** and other log-only changes: no guide content depends on these.
+
+Applying these to the guide: update Section 4 (log tags/lines, response-body guidance, table row for responses) and Section 7 (optOut purges cache; fail-closed GDPR default), the Section 11 caching note (5xx retry behaviour), and the Section 2 Meta note (anonymous ID / trusted provider). Everything else stays unchanged.
+
 # Tenjin Android SDK — Integration Reference for AI Assistants
 
 > **Purpose:** This document is a self-contained technical reference designed for LLMs and AI coding assistants. It provides everything needed to integrate the Tenjin Android SDK into an Android project without requiring external documentation lookups, except for the version lookup below.
@@ -203,6 +217,10 @@ And add your Meta app ID to `res/values/strings.xml`:
 <string name="facebook_app_id" translatable="false">YOUR_META_APP_ID</string>
 ```
 
+Install referrer data is only read from a Meta provider that is owned by the official Meta package (`com.facebook.katana` or `com.instagram.android`). A provider registered by any other app is ignored, and the SDK logs `Ignoring ... owned by ..., expected ...` under the tag `MetaInstallReferrer`.
+
+The SDK also sends a Meta anonymous ID (`meta_anon_id`) when the Meta SDK is in the app, is initialized, and has auto-initialization turned off (`FacebookSdk.getAutoInitEnabled() == false`), which is the flag Meta documents for holding the SDK back until the user consents. If the app does not use the Meta SDK, or has not initialized it, no anonymous ID is sent.
+
 ---
 
 ## 3. Core Initialization
@@ -306,7 +324,7 @@ Do this before adding any optional feature. Run the app on a device or emulator 
 
 ### What to Look For
 
-The SDK logs every request under the Logcat tag **`HttpConnection`** (not `TenjinSDK`), and labels every request `Tenjin::connect` regardless of its type. Lifecycle messages are under the tag `TenjinSDK`.
+The SDK logs every request under the Logcat tag **`HttpConnection`** (not `TenjinSDK`), and labels every request `Tenjin::connect` regardless of its type. Lifecycle messages are under the tag `TenjinSDK`. The SDK does **not** log request URLs, request parameters or response bodies, so the log confirms that a request was sent and how large the response was, not what it contained.
 
 ```bash
 adb logcat -s HttpConnection:D TenjinSDK:D
@@ -316,27 +334,24 @@ A working integration prints, on launch:
 
 ```text
 D/TenjinSDK: Connecting...
-D/HttpConnection: Tenjin request URL: https://track.tenjin.com/v0/event
-D/HttpConnection: Tenjin::connect params: {...}
-D/HttpConnection: Tenjin::connect response: {"code":200,"success":true}
+D/HttpConnection: Tenjin request sent
+D/HttpConnection: Tenjin::connect params count: 42
+D/HttpConnection: Tenjin::connect response length: 27
 ```
 
-Because the label is always `Tenjin::connect`, use the `Tenjin request URL` line above it to tell which request (connect, event, purchase) a response belongs to. `HttpConnection` is a generic tag that other libraries may also use, so match on the `Tenjin` message prefix.
+The exact counts vary. `HttpConnection` is a generic tag that other libraries may also use, so match on the `Tenjin` message prefix.
 
-### What the Response Means
+### Checking the Response
 
-The Android SDK logs the response body, not the HTTP status. Match on the text:
+Because the response body is not logged, a 200 is confirmed by the absence of error output and by the `response length` line being present after `request sent`. The response code and error reasons (`unauthorized`, `no such app`, `invalid device identifier`, `not logged`, `ignored`) are no longer printed to Logcat, so do not expect them there. To confirm acceptance, check the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics) in the dashboard instead. A 202 is still **not** success: the request was received and dropped, and the dashboard is the place to see why.
 
-| Response contains | HTTP status | Meaning | What to do |
-|-------------------|-------------|---------|------------|
-| `"success":true` | 200 | Accepted | Nothing. The integration works |
-| `unauthorized` | 401 | The SDK key is unknown, or it is not the key of this app | Use the key from this app's page in the dashboard (this platform, this application ID) |
-| `no such app` | 404 | There is no Tenjin app for this application ID on Android | Create the app in the dashboard with exactly this application ID, or fix the ID (check debug suffixes and flavors) |
-| `invalid device identifier` | 202 | The request carried no advertising ID | Add the `AD_ID` permission and `play-services-ads-identifier`; test on a device or emulator with Google Play services |
-| `not logged` | 202 | The SDK key is disabled | Enable the key in the dashboard or use another key of the same app |
-| `ignored` | 202 | The request was filtered by an app-version rule configured for the app | Check the app's version rules in the dashboard |
-
-A 202 is **not** success: the request was received and dropped.
+| Symptom in the dashboard or setup | Meaning | What to do |
+|-----------------------------------|---------|------------|
+| Events never appear for the device | The SDK key is unknown, or is not the key of this app | Use the key from this app's page in the dashboard (this platform, this application ID) |
+| Events never appear, app ID looks right | There is no Tenjin app for this application ID on Android | Create the app in the dashboard with exactly this application ID, or fix the ID (check debug suffixes and flavors) |
+| Events arrive without an advertising ID | The request carried no advertising ID | Add the `AD_ID` permission and `play-services-ads-identifier`; test on a device or emulator with Google Play services |
+| Events never appear, key is valid | The SDK key is disabled | Enable the key in the dashboard or use another key of the same app |
+| Events dropped for some app versions | The request was filtered by an app-version rule configured for the app | Check the app's version rules in the dashboard |
 
 ### No Request at All
 
@@ -346,7 +361,7 @@ A 202 is **not** success: the request was received and dropped.
 
 ### In the Dashboard
 
-After a 200 response, the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics) shows events for devices registered as test devices. The `Tenjin::connect params` line contains the `advertising_id` to register.
+After a successful request, the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics) shows events for devices registered as test devices. The advertising ID to register is the one the app's device reports; it is not printed in the Logcat output.
 
 ---
 
@@ -473,6 +488,8 @@ if (userConsented) {
 instance.connect();
 ```
 
+`optOut()` also deletes all events already queued on the device, so data collected before the user opted out (such as the advertising ID, IMEI, receipts and deep links) is not sent later.
+
 ### Granular Parameter Control
 
 ```java
@@ -494,6 +511,8 @@ Opt in or out based on the CMP consent already stored on the device (TCF purpose
 ```java
 boolean optedIn = instance.optInOutUsingCMP();
 ```
+
+When the device stores `IABTCF_gdprApplies` as `1` but has no valid consent string, the SDK opts out rather than assuming consent. If GDPR does not apply, or the flag is absent, the default remains opted in.
 
 ### Google DMA Parameters
 
@@ -687,6 +706,8 @@ instance.setCacheEventSetting(true);
 
 The setting is stored on the device. Removing the call in a later release does not turn caching off; call `setCacheEventSetting(false)` to disable it.
 
+With caching on, a request that keeps failing with a 5xx response from the Tenjin servers is stored and retried later instead of being lost. The SDK gives up on a single request after 5 retries on 5xx responses, unless the server asks not to retry.
+
 ---
 
 ## 12. Integration Checklist
@@ -701,7 +722,7 @@ When integrating Tenjin into an Android project, verify these items:
 - [ ] **`connect()`** is called in `onResume()` of the launcher Activity, on every launch.
 - [ ] **The SDK key** is the key of the Android app whose application ID matches this build (check debug suffixes and flavors); `<SDK_KEY>` is replaced.
 - [ ] **ProGuard rules** including the Gson `TypeToken` rules are added if the build is minified.
-- [ ] **Logcat** shows `Tenjin::connect response: {"code":200,"success":true}` under the tag `HttpConnection`.
+- [ ] **Logcat** shows `Tenjin request sent` followed by `Tenjin::connect response length` under the tag `HttpConnection`.
 - [ ] Integration is verified using the [Live Test Device Data Tool](https://www.tenjin.com/dashboard/sdk_diagnostics).
 
 ---
@@ -711,12 +732,12 @@ When integrating Tenjin into an Android project, verify these items:
 | Mistake | Why It Matters | Fix |
 |---------|---------------|-----|
 | Using an SDK version from memory | It is usually many releases old and lacks the APIs in this guide | Run the Maven Central command in [Resolve the SDK Version](#resolve-the-sdk-version) |
-| Using the iOS app's SDK key, or one key for every flavor | The key must belong to the app with this platform and application ID; other keys get `unauthorized` | One key per Tenjin app; select it per build type or flavor |
+| Using the iOS app's SDK key, or one key for every flavor | The key must belong to the app with this platform and application ID; other keys are refused | One key per Tenjin app; select it per build type or flavor |
 | Calling `connect()` in the `Application` class | Launch deep links are not captured and returns to the foreground are missed | Call it in the launcher Activity's `onResume()` |
 | Calling `connect()` only on first launch | Tenjin needs session data on every launch; accounts may be suspended | Call `connect()` in `onResume()` unconditionally |
 | Missing `AD_ID` permission or `play-services-ads-identifier` | No advertising ID: requests are rejected with `invalid device identifier` | Add both |
-| Treating a 202 response as success | 202 means the request was received and dropped | Read the response text in Logcat (Section 4) |
-| Looking for requests under the `TenjinSDK` Logcat tag | Requests and responses are logged under `HttpConnection` | `adb logcat -s HttpConnection:D TenjinSDK:D` |
+| Treating a 202 response as success | 202 means the request was received and dropped | Check the Live Test Device Data Tool in the dashboard (Section 4) |
+| Looking for requests under the `TenjinSDK` Logcat tag | Requests are logged under `HttpConnection` | `adb logcat -s HttpConnection:D TenjinSDK:D` |
 | Relaunching within 30 seconds while testing | The SDK skips the second `connect()` and sends nothing | Wait 30 seconds or clear app data |
 | Sending events before `connect()` | Events will not be processed | Always call `connect()` first |
 | Event names over 80 characters | Will be rejected | Keep event names concise |
@@ -766,7 +787,7 @@ All methods are on `com.tenjin.android.TenjinSDK`.
 
 | Method | Purpose |
 |--------|---------|
-| `optIn()` / `optOut()` | GDPR full opt-in/out |
+| `optIn()` / `optOut()` | GDPR full opt-in/out (`optOut()` also deletes queued events) |
 | `optInParams(String[])` / `optOutParams(String[])` | Granular parameter control |
 | `optInOutUsingCMP()` | Automatic CMP-based consent |
 | `setGoogleDMAParameters(boolean, boolean)` | Set Google DMA consent flags |
