@@ -1,17 +1,3 @@
-The diff is to be applied to the guide under strict rules. Analyzing which changes are developer-facing and documented:
-
-- **Version bump** 2.0.2 → 2.1.0 is internal (`DEV_SDK_VERSION`); the guide doesn't cite a version number, so no change.
-- **Logging changes** (the `Log.d` messages in HttpConnection, PlatformParams, referrers, IMEI, OAID, StoreAttribution) change log text. The guide's Section 4 documents the `Tenjin::connect params:` / `Tenjin::connect response:` lines and the example output. Those lines are now gone (replaced by "request sent", "params count", "response length"), so Section 4's "A working integration prints" example and the "Because the label is always..." guidance are now inaccurate and must be updated. The response body is no longer logged, so the "What the Response Means" table's basis (matching response text in Logcat) no longer holds and must be reworked.
-- **5xx retry cap** (`MAX_5XX_RETRIES = 5`) and 5xx now yielding a retryable result with event caching: behaviour the developer can observe; documented in Section 11 caching discussion.
-- **`optOut()` now purges cached events** (`deleteAllEvents`): developer-facing behaviour, relevant to Section 7.
-- **`MetaAnonymousIdParams`** adds `meta_anon_id` and depends on the Meta SDK being consented/initialized: developer-facing for Meta users (Section 2 Meta install referrer area).
-- **`MetaInstallReferrer`** now only trusts providers owned by the official Meta package: behaviour relevant to Meta setup.
-- **GDPR `optIn()` default** now fails closed when `IABTCF_gdprApplies` is 1 and the consent string is missing/malformed: relevant to Section 7 CMP behaviour.
-- **`TJNCertificatePinningHelper`/`HttpConnection`**: pinning context now built regardless of storage path and applied on every attempt; only relevant to `encryptRequests` (not documented in the guide's public API section beyond `setEncryptRequestsSetting`), so no explicit change is required.
-- **`setCustomerUserId` log** and other log-only changes: no guide content depends on these.
-
-Applying these to the guide: update Section 4 (log tags/lines, response-body guidance, table row for responses) and Section 7 (optOut purges cache; fail-closed GDPR default), the Section 11 caching note (5xx retry behaviour), and the Section 2 Meta note (anonymous ID / trusted provider). Everything else stays unchanged.
-
 # Tenjin Android SDK — Integration Reference for AI Assistants
 
 > **Purpose:** This document is a self-contained technical reference designed for LLMs and AI coding assistants. It provides everything needed to integrate the Tenjin Android SDK into an Android project without requiring external documentation lookups, except for the version lookup below.
